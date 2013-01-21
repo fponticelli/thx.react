@@ -90,4 +90,32 @@ class TestDispatcher
 		Assert.equals("Haxe", test_s);
 		Assert.equals(1, test_i);
 	}
+	
+	public function testClear()
+	{
+		var dispatcher = new Dispatcher();
+		var test_s = null;
+		var test_i = 0;
+		var test_b = false;
+		dispatcher.on(function(name : String) { test_s = name; } );
+		dispatcher.on(function(i : Int) { test_i = i; } );
+		dispatcher.on(function(b : Bool) { test_b = b; } );
+		
+		dispatcher.clear(String);
+		dispatcher.trigger("Haxe");
+		dispatcher.trigger(1);
+		dispatcher.trigger(true);
+		Assert.isNull(test_s);
+		Assert.equals(1, test_i);
+		Assert.isTrue(test_b);
+		
+		dispatcher.clear("Int");
+		dispatcher.trigger(2);
+		Assert.equals(1, test_i);
+		Assert.isTrue(test_b);
+		
+		dispatcher.clear();
+		dispatcher.trigger(false);
+		Assert.isTrue(test_b);
+	}
 }

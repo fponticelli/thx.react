@@ -64,6 +64,18 @@ class Dispatcher
 		return macro $ethis.unbindOnceByName($type, $handler);
 	}
 	
+	@:overload(function(type : Class<Dynamic>):Void{})
+	public function clear(?type : String)
+	{
+		if (null == type) {
+			map = new Hash();
+		} else if (Std.is(type, String)) {
+			map.remove(type);
+		} else {
+			map.remove(Type.getClassName(cast type));
+		}
+	}
+	
 	macro public function trigger<T>(ethis : ExprOf<Dispatcher>, value : ExprOf<T>)
 	{
 		var type = exprStringOfType(Context.typeof(value), value.pos);

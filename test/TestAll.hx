@@ -6,6 +6,7 @@ class TestAll
 	public static function addTests(runner : Runner)
 	{
 		runner.addCase(new thx.react.TestDispatcher());
+		runner.addCase(new thx.react.TestDeferred());
 	}
 
 	public static function main()
