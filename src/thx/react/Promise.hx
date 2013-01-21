@@ -7,6 +7,11 @@ package thx.react;
 
 class Promise<TData>
 {
+	public inline static function value<T>(v : T)
+	{
+		return new Deferred().resolve(v);
+	}
+	
 	var queue : Array<TData -> Void>;
 	var state : PromiseState<TData>;
 //	var errorDispatcher : Dispatcher;
@@ -52,6 +57,7 @@ class Promise<TData>
 	{
 		queue.push(success);
 		poll();
+		return this;
 	}
 /*
      .then<TError>(success : TData -> Void, ?failure : TError -> Void)
