@@ -7,22 +7,14 @@ package thx.react;
 
 #if macro
 import haxe.macro.Expr;
-import haxe.macro.ExprTools;
 import haxe.macro.TypeTools;
-import haxe.macro.ComplexTypeTools;
 import haxe.macro.Context;
 #end
 
 class Dispatcher
 {
-	var map : Hash<Array<Dynamic -> Void>>;
-	public function new()
-	{
-		map = new Hash();
-	}
-	
 	#if macro
-	static function extractFirstArgumentType<T>(handler : ExprOf<T -> Void>)
+	public static function extractFirstArgumentType<T>(handler : ExprOf<T -> Void>)
 	{
 		var type = Context.typeof(handler);
 		return switch(type)
@@ -40,11 +32,17 @@ class Dispatcher
 		}
 	}
 	
-	static function exprStringOfType(type, pos)
+	public static function exprStringOfType(type, pos)
 	{
 		return Context.parse('"' + TypeTools.toString(type) + '"', pos);
 	}
 	#end
+	
+	var map : Hash<Array<Dynamic -> Void>>;
+	public function new()
+	{
+		map = new Hash();
+	}
 	
 	macro public function on<T>(ethis : ExprOf<Dispatcher>, handler : ExprOf<T -> Void>)
 	{
@@ -82,6 +80,30 @@ class Dispatcher
 		return macro $ethis.triggerByName($type, $value);
 	}
 	
+	function triggerByValue<T>(payload : T)
+	{
+		var name = resolveValueType(Type.typeof(payload));
+		triggerByName(name, payload);
+	}
+	
+	function triggerByName<T>(name : String, payload : T)
+	{
+		var binds = map.get(name);
+		if (null == binds) return;
+		try
+		{
+			for (handler in binds.copy())
+				handler(payload);
+			if (name != "Dynamic")
+			{
+				binds = map.get("Dynamic");
+				if (null == binds) return;
+				for (handler in binds.copy())
+					handler(payload);
+			}
+		} catch (e : EventCancel) { }
+	}
+	
 	function bindByName<T>(name : String, handler : T -> Void)
 	{
 		var binds = map.get(name);
@@ -116,22 +138,19 @@ class Dispatcher
 		}
 	}
 	
-	function triggerByName<T>(name : String, payload : T)
+	static function resolveValueType(t : Type.ValueType)
 	{
-		var binds = map.get(name);
-		if (null == binds) return;
-		try
+		return switch(t)
 		{
-			for (handler in binds.copy())
-				handler(payload);
-			if (name != "Dynamic")
-			{
-				binds = map.get("Dynamic");
-				if (null == binds) return;
-				for (handler in binds.copy())
-					handler(payload);
-			}
-		} catch (e : EventCancel) { }
+			case TInt:      "Int";
+			case TFloat:    "Float";
+			case TBool:     "Bool";
+			case TObject:   "Dynamic"; // TODO ?
+			case TFunction: "Function";
+			case TClass(c): Type.getClassName(c);
+			case TEnum(e):  Type.getEnumName(e);
+			case _:         null;
+		}
 	}
 	
 	@:access(thx.react.EventCancel)

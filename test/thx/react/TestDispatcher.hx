@@ -118,4 +118,16 @@ class TestDispatcher
 		dispatcher.trigger(false);
 		Assert.isTrue(test_b);
 	}
+	
+	public function testTriggerByValue()
+	{
+		var dispatcher = new Dispatcher();
+		dispatcher.on(function(test : MyEnum) Assert.same(MyValue, test));
+		dispatcher.triggerByValue(MyValue);
+	}
+}
+
+private enum MyEnum
+{
+	MyValue;
 }

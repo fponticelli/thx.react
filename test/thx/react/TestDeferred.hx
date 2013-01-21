@@ -29,4 +29,24 @@ class TestDeferred
 		Promise.value(7).then(function(v) test = v);
 		Assert.equals(7, test);
 	}
+	
+	public function testFailure()
+	{
+		var deferred = new Deferred();
+		deferred
+			.then(function(_) Assert.fail("success should never occur"))
+			.fail(function(e : Int) Assert.fail("this Int error should never occur"))
+			.fail(function(e : String) Assert.equals("error", e));
+		deferred.reject("error");
+	}
+	
+	public function testResolveFirstFailure()
+	{
+		var deferred = new Deferred();
+		deferred
+			.reject("error")
+			.then(function(_) Assert.fail("success should never occur"))
+			.fail(function(e : Int) Assert.fail("this Int error should never occur"))
+			.fail(function(e : String) Assert.equals("error", e));
+	}
 }

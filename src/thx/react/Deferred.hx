@@ -31,10 +31,4 @@ class Deferred<TData> extends Promise<TData>
 	}
 	
 	public function promise() : Promise<TData> return this
-/*
-     .resolve(data : TData)
-     .reject<TError>(error : TError)
-     .notify<TProgress>(progress : TProgress)
-     .promise() : Promise<TData>
-*/
 }
