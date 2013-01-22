@@ -49,4 +49,17 @@ class TestDeferred
 			.fail(function(e : Int) Assert.fail("this Int error should never occur"))
 			.fail(function(e : String) Assert.equals("error", e));
 	}
+	
+	public function testProgress()
+	{
+		var deferred = new Deferred(),
+			counter = 0;
+		deferred
+			.then(function(_) Assert.fail("success should never occur"))
+			.progress(function(e : Int) counter += e)
+			.progress(function(e : String) Assert.fail("this Int error should never occur"));
+		deferred.notify(2);
+		deferred.notify(3);
+		Assert.equals(5, counter);
+	}
 }

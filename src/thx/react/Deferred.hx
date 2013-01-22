@@ -24,9 +24,9 @@ class Deferred<TData> extends Promise<TData>
 		return this;
 	}
 	
-	public function notify<TProgress>(notification : TProgress)
+	public function notify<TProgress>(data : TProgress)
 	{
-		throw "not implemented yet";
+		changeState(Progress(data));
 		return this;
 	}
 	

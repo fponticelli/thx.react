@@ -1,10 +1,9 @@
-package thx.react;
-
 /**
  * ...
  * @author Franco Ponticelli
  */
 
+package thx.react;
 	
 @:access(thx.react.Dispatcher)
 class Promise<TData>
@@ -17,7 +16,7 @@ class Promise<TData>
 	var queue : Array<TData -> Void>;
 	var state : PromiseState<TData>;
 	var errorDispatcher : Dispatcher;
-//	var progressDispatcher : Dispatcher;
+	var progressDispatcher : Dispatcher;
 	public function new()
 	{
 		queue = [];
@@ -38,25 +37,33 @@ class Promise<TData>
 					errorDispatcher.triggerByValue(error);
 					errorDispatcher = null;
 				}
+			case Progress(data):
+				if (null != progressDispatcher)
+				{
+					progressDispatcher.triggerByValue(data);
+				}
 			case Idle:
 		}
 	}
 	
 	function ensureErrorDispatcher() if (null == errorDispatcher) errorDispatcher = new Dispatcher()
+	function ensureProgressDispatcher() if (null == progressDispatcher) progressDispatcher = new Dispatcher()
 	
 	function changeState(newstate : PromiseState<TData>)
 	{
-		switch(state)
+		switch[state, newstate]
 		{
-			case Idle:
+			case [Idle, _]:
 				state = newstate;
-			case _:
+			case [Progress(_), Progress(_)]:
+				state = newstate;
+			case [_, _]:
 				throw "promise was already resolved/failed, can't apply new state $newstate";
 		}
 		poll();
 	}
 	
-	macro public function fail<TError>(ethis : haxe.macro.Expr.ExprOf<Dispatcher>, handler : haxe.macro.Expr.ExprOf<TError -> Void>)
+	macro public function fail<TError>(ethis : haxe.macro.Expr.ExprOf<Promise<Dynamic>>, handler : haxe.macro.Expr.ExprOf<TError -> Void>)
 	{
 		var type = Dispatcher.extractFirstArgumentType(handler);
 		return macro $ethis.failByName($type, $handler);
@@ -67,6 +74,20 @@ class Promise<TData>
 	{
 		ensureErrorDispatcher();
 		errorDispatcher.bindByName(name, failure);
+		poll();
+		return this;
+	}
+	
+	macro public function progress<TProgress>(ethis : haxe.macro.Expr.ExprOf<Promise<Dynamic>>, handler : haxe.macro.Expr.ExprOf<TProgress -> Void>)
+	{
+		var type = Dispatcher.extractFirstArgumentType(handler);
+		return macro $ethis.progressByName($type, $handler);
+	}
+	
+	public function progressByName<TProgress>(name : String, failure : TProgress -> Void)
+	{
+		ensureProgressDispatcher();
+		progressDispatcher.bindByName(name, failure);
 		poll();
 		return this;
 	}
@@ -89,5 +110,6 @@ class Promise<TData>
 enum PromiseState<T> {
 	Idle;
 	Failure(error : Dynamic);
+	Progress(data : Dynamic);
 	Success(data : T);
 }
