@@ -4,7 +4,7 @@
  */
 
 package thx.react;
-	
+
 @:access(thx.react.Dispatcher)
 class Promise<TData>
 {
@@ -12,7 +12,7 @@ class Promise<TData>
 	{
 		return new Deferred().resolve(v);
 	}
-	
+
 	var queue : Array<TData -> Void>;
 	var state : PromiseState<TData>;
 	var errorDispatcher : Dispatcher;
@@ -22,7 +22,7 @@ class Promise<TData>
 		queue = [];
 		state = Idle;
 	}
-	
+
 	function poll()
 	{
 		switch(state)
@@ -45,10 +45,10 @@ class Promise<TData>
 			case Idle:
 		}
 	}
-	
+
 	function ensureErrorDispatcher() if (null == errorDispatcher) errorDispatcher = new Dispatcher()
 	function ensureProgressDispatcher() if (null == progressDispatcher) progressDispatcher = new Dispatcher()
-	
+
 	function changeState(newstate : PromiseState<TData>)
 	{
 		switch[state, newstate]
@@ -62,13 +62,13 @@ class Promise<TData>
 		}
 		poll();
 	}
-	
+
 	macro public function fail<TError>(ethis : haxe.macro.Expr.ExprOf<Promise<Dynamic>>, handler : haxe.macro.Expr.ExprOf<TError -> Void>)
 	{
 		var type = Dispatcher.extractFirstArgumentType(handler);
 		return macro $ethis.failByName($type, $handler);
 	}
-	
+
 	// TODO why public is required?
 	public function failByName<TError>(name : String, failure : TError -> Void)
 	{
@@ -77,28 +77,28 @@ class Promise<TData>
 		poll();
 		return this;
 	}
-	
+
 	macro public function progress<TProgress>(ethis : haxe.macro.Expr.ExprOf<Promise<Dynamic>>, handler : haxe.macro.Expr.ExprOf<TProgress -> Void>)
 	{
 		var type = Dispatcher.extractFirstArgumentType(handler);
 		return macro $ethis.progressByName($type, $handler);
 	}
-	
-	public function progressByName<TProgress>(name : String, failure : TProgress -> Void)
+
+	public function progressByName<TProgress>(name : String, progress : TProgress -> Void)
 	{
 		ensureProgressDispatcher();
-		progressDispatcher.bindByName(name, failure);
+		progressDispatcher.bindByName(name, progress);
 		poll();
 		return this;
 	}
-	
+
 	public function then(success : TData -> Void)
 	{
 		queue.push(success);
 		poll();
 		return this;
 	}
-	
+
 	public function pipe<TNew>(success : TData -> Promise<TNew>) : Promise<TNew>
 	{
 		var deferred = new Deferred();

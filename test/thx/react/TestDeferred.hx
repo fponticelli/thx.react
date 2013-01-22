@@ -10,7 +10,7 @@ import utest.Assert;
 class TestDeferred
 {
 	public function new() { }
-	
+
 	public function testResolve()
 	{
 		var deferred = new Deferred();
@@ -22,44 +22,48 @@ class TestDeferred
 		deferred.then(function(v) counter *= v);
 		Assert.equals(9, counter);
 	}
-	
+
 	public function testValue()
 	{
 		var test = 0;
 		Promise.value(7).then(function(v) test = v);
 		Assert.equals(7, test);
 	}
-	
+
 	public function testFailure()
 	{
-		var deferred = new Deferred();
-		deferred
+		new Deferred()
 			.then(function(_) Assert.fail("success should never occur"))
 			.fail(function(e : Int) Assert.fail("this Int error should never occur"))
-			.fail(function(e : String) Assert.equals("error", e));
-		deferred.reject("error");
+			.fail(function(e : String) Assert.equals("error", e))
+			.reject("error");
 	}
-	
+
 	public function testResolveFirstFailure()
 	{
-		var deferred = new Deferred();
-		deferred
+		new Deferred()
 			.reject("error")
 			.then(function(_) Assert.fail("success should never occur"))
 			.fail(function(e : Int) Assert.fail("this Int error should never occur"))
 			.fail(function(e : String) Assert.equals("error", e));
 	}
-	
+
 	public function testProgress()
 	{
-		var deferred = new Deferred(),
-			counter = 0;
-		deferred
+		var counter = 0;
+		new Deferred()
 			.then(function(_) Assert.fail("success should never occur"))
 			.progress(function(e : Int) counter += e)
-			.progress(function(e : String) Assert.fail("this Int error should never occur"));
-		deferred.notify(2);
-		deferred.notify(3);
+			.progress(function(e : String) Assert.fail("this Int error should never occur"))
+			.notify(2)
+			.notify(3);
 		Assert.equals(5, counter);
+	}
+
+	public function testPipe()
+	{
+		var test = null;
+		Deferred.value(1).pipe(function(i : Int) return Deferred.value("#" + i)).then(function(s : String) test = s);
+		Assert.equals("#1", test);
 	}
 }
