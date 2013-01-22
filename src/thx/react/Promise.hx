@@ -92,19 +92,27 @@ class Promise<TData>
 		return this;
 	}
 	
-	public function then<TError>(success : TData -> Void)
+	public function then(success : TData -> Void)
 	{
 		queue.push(success);
 		poll();
 		return this;
 	}
+	
+	public function pipe<TNew>(success : TData -> Promise<TNew>) : Promise<TNew>
+	{
+		var deferred = new Deferred();
+		this.then(function(data : TData) {
+				var promise = success(data);
+				promise.then(deferred.resolve);
+			})
+			.failByName("Dynamic", deferred.reject)
+			.progressByName("Dynamic", deferred.notify);
+		return deferred.promise();
+	}
 /*
-     .then<TError>(success : TData -> Void, ?failure : TError -> Void)
-     .fail<TError>(failure : TError -> Void)
-     .progress<TProgress>(handler : TProgress -> Void)
      .pipe<TNew>(handler : TData -> Promise<TNew>) : Promise<TNew>
 */
-	
 }
 
 enum PromiseState<T> {
