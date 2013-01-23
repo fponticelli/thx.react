@@ -6,26 +6,26 @@
 package thx.react;
 
 import utest.Assert;
-	
+
 @:access(thx.react.Dispatcher)
 class TestDispatcher
 {
 	public function new() {}
-	
+
 	public var counter1 : Int = 0;
 	public var counter2 : Int = 0;
-	
+
 	public function setup()
 	{
 		counter1 = 0;
 		counter2 = 0;
 	}
-	
+
 	public function increment1(i : Int)
 	{
 		counter1 += i;
 	}
-	
+
 	public function increment2(i : Int)
 	{
 		counter2 += i;
@@ -51,7 +51,7 @@ class TestDispatcher
 		dispatcher.triggerByNames(["inc1"], 1);
 		Assert.equals(1, counter1);
 	}
-	
+
 	public function testBindOnce()
 	{
 		var dispatcher = new Dispatcher();
@@ -60,7 +60,7 @@ class TestDispatcher
 		dispatcher.triggerByNames(["inc1"], 1);
 		Assert.equals(1, counter1);
 	}
-	
+
 	public function testDynamic()
 	{
 		var dispatcher = new Dispatcher();
@@ -68,14 +68,14 @@ class TestDispatcher
 			ttyped   = 0;
 		dispatcher.bindByName("Dynamic", function(_) tdynamic++);
 		dispatcher.bindByName("Int", function(_) ttyped++);
-		dispatcher.triggerByNames(["Int"], 0);
+		dispatcher.triggerByNames(["Int", "Dynamic"], 0);
 		Assert.equals(1, tdynamic);
 		Assert.equals(1, ttyped);
 		dispatcher.triggerByNames(["Dynamic"], 0);
 		Assert.equals(2, tdynamic);
 		Assert.equals(1, ttyped);
 	}
-	
+
 	public function testOn()
 	{
 		var dispatcher = new Dispatcher();
@@ -90,7 +90,7 @@ class TestDispatcher
 		Assert.equals("Haxe", test_s);
 		Assert.equals(1, test_i);
 	}
-	
+
 	public function testClear()
 	{
 		var dispatcher = new Dispatcher();
@@ -100,7 +100,7 @@ class TestDispatcher
 		dispatcher.on(function(name : String) { test_s = name; } );
 		dispatcher.on(function(i : Int) { test_i = i; } );
 		dispatcher.on(function(b : Bool) { test_b = b; } );
-		
+
 		dispatcher.clear(String);
 		dispatcher.trigger("Haxe");
 		dispatcher.trigger(1);
@@ -108,23 +108,53 @@ class TestDispatcher
 		Assert.isNull(test_s);
 		Assert.equals(1, test_i);
 		Assert.isTrue(test_b);
-		
+
 		dispatcher.clear("Int");
 		dispatcher.trigger(2);
 		Assert.equals(1, test_i);
 		Assert.isTrue(test_b);
-		
+
 		dispatcher.clear();
 		dispatcher.trigger(false);
 		Assert.isTrue(test_b);
 	}
-	
+
 	public function testTriggerByValue()
 	{
 		var dispatcher = new Dispatcher();
 		dispatcher.on(function(test : MyEnum) Assert.same(MyValue, test));
 		dispatcher.triggerByValue(MyValue);
 	}
+
+	public function testHierarchy()
+	{
+		var dispatcher = new Dispatcher(),
+			counter = 0;
+		dispatcher.on(function(v : Dynamic) {
+			counter += 100;
+		});
+		dispatcher.on(function(v : A) {
+			counter += 10;
+		});
+		dispatcher.on(function(v : B) {
+			counter += 1;
+		});
+		dispatcher.trigger(new B());
+		Assert.equals(111, counter);
+		dispatcher.trigger(new A());
+		Assert.equals(221, counter);
+		dispatcher.trigger(1);
+		Assert.equals(321, counter);
+	}
+}
+
+class A
+{
+	public function new() { }
+}
+
+class B extends A
+{
 }
 
 private enum MyEnum

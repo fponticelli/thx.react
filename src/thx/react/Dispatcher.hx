@@ -8,6 +8,7 @@ package thx.react;
 #if macro
 import haxe.macro.Expr;
 import haxe.macro.TypeTools;
+import haxe.macro.Type.ClassType;
 import haxe.macro.Context;
 #end
 
@@ -31,37 +32,55 @@ class Dispatcher
 				Context.error("handler must be a function", handler.pos);
 		}
 	}
-	
+
 	public static function exprStringOfType(type, pos)
 	{
 		return Context.parse('"' + TypeTools.toString(type) + '"', pos);
 	}
+
+	public static function classHierarchy(cls : ClassType)
+	{
+		var types = [cls.pack.concat([cls.name]).join(".")],
+			parent = null == cls.superClass ? null : classHierarchy(cls.superClass.t.get());
+		if(null != parent)
+			types = types.concat(parent);
+		return types;
+	}
+
+	public static function typeHierarchy(type)
+	{
+		try {
+			return classHierarchy(TypeTools.getClass(type));
+		} catch(e : Dynamic) {
+			return [TypeTools.toString(type)];
+		}
+	}
 	#end
-	
+
 	var map : Hash<Array<Dynamic -> Void>>;
 	public function new()
 	{
 		map = new Hash();
 	}
-	
+
 	macro public function on<T>(ethis : ExprOf<Dispatcher>, handler : ExprOf<T -> Void>)
 	{
 		var type = extractFirstArgumentType(handler);
 		return macro $ethis.bindByName($type, $handler);
 	}
-	
+
 	macro public function one<T>(ethis : ExprOf<Dispatcher>, handler : ExprOf<T -> Void>)
 	{
 		var type = extractFirstArgumentType(handler);
 		return macro $ethis.bindOnceByName($type, $handler);
 	}
-	
+
 	macro public function off<T>(ethis : ExprOf<Dispatcher>, handler : ExprOf<T -> Void>)
 	{
 		var type = extractFirstArgumentType(handler);
 		return macro $ethis.unbindOnceByName($type, $handler);
 	}
-	
+
 	@:overload(function(type : Class<Dynamic>):Void{})
 	public function clear(?type : String)
 	{
@@ -73,42 +92,24 @@ class Dispatcher
 			map.remove(Type.getClassName(cast type));
 		}
 	}
-	
+
 	macro public function trigger<T>(ethis : ExprOf<Dispatcher>, value : ExprOf<T>)
 	{
-		var type = exprStringOfType(Context.typeof(value), value.pos);
-	/*
-		var t = Context.typeof(value);
-		switch(t)
-		{
-			case
-		}
-		var stype = TypeTools.toString(Context.typeof(value));
-		trace(stype);
-		var cls   = Context. Type.resolveClass(stype),
-			types = [stype];
-		while (null != cls)
-		{
-			cls = Type.getSuperClass(cls);
-			if (null == cls) break;
-			types.push(Type.getClassName(cls));
-		}
-		trace(types);
-		*/
-		return macro $ethis.triggerByNames([$type], $value);
+		var type  = Context.typeof(value),
+			types = typeHierarchy(type);
+		if(types[types.length-1] != "Dynamic")
+			types.push("Dynamic");
+		return macro $ethis.triggerByNames($v{types}, $value);
 	}
-	
+
 	function triggerByValue<T>(payload : T)
 	{
-		var name = resolveValueType(Type.typeof(payload));
-		_triggerByName(name, payload);
+		var names = [resolveValueType(Type.typeof(payload))];
+		if(names[names.length-1] != "Dynamic")
+			names.push("Dynamic");
+		triggerByNames(names, payload);
 	}
-	
-	function _triggerByName<T>(name : String, payload : T)
-	{
-		triggerByNames("Dynamic" == name ? [name] : [name, "Dynamic"], payload);
-	}
-	
+
 	function triggerByNames<T>(names : Array<String>, payload : T)
 	{
 		var i, binds;
@@ -116,7 +117,7 @@ class Dispatcher
 		{
 			for (name in names)
 			{
-				binds = map.get(name);
+				binds = map.get(""+name); // TODO this seems a bug in Neko
 				if (null == binds) continue;
 				i = binds.length;
 				while (i > 0)
@@ -124,7 +125,7 @@ class Dispatcher
 			}
 		} catch (e : EventCancel) { }
 	}
-	
+
 	function bindByName<T>(name : String, handler : T -> Void)
 	{
 		var binds = map.get(name);
@@ -132,7 +133,7 @@ class Dispatcher
 			map.set(name, binds = []);
 		binds.unshift(handler);
 	}
-	
+
 	function bindOnceByName<T>(name : String, handler : T -> Void)
 	{
 		function h(v : T) {
@@ -141,7 +142,7 @@ class Dispatcher
 		}
 		bindByName(name, h);
 	}
-	
+
 	function unbindByName<T>(name : String, ?handler : T -> Void)
 	{
 		if (null == handler)
@@ -158,7 +159,7 @@ class Dispatcher
 			}
 		}
 	}
-	
+
 	static function resolveValueType(t : Type.ValueType)
 	{
 		return switch(t)
@@ -173,20 +174,15 @@ class Dispatcher
 			case _:         null;
 		}
 	}
-	
+
 	@:access(thx.react.EventCancel)
 	public inline static function cancel()
 	{
 		throw new EventCancel();
 	}
-	/*
-	 .on<T>(handler : T -> Void)
-     .off<T>(?handler : T -> Void)
-     .once<T>(handler : T -> Void)
-     .trigger<T>(data : T)
-     .when<T1...>(handler : T1... -> Void)
-	*/
-
+/*
+add .wait(other : Promise<TData2>) : Promise2<TData, TData2>
+*/
 }
 
 class EventCancel
