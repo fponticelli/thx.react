@@ -66,19 +66,19 @@ class Dispatcher
 	macro public function on<T>(ethis : ExprOf<Dispatcher>, handler : ExprOf<T -> Void>)
 	{
 		var type = extractFirstArgumentType(handler);
-		return macro $ethis.bindByName($type, $handler);
+		return macro $ethis.bind($type, $handler);
 	}
 
 	macro public function one<T>(ethis : ExprOf<Dispatcher>, handler : ExprOf<T -> Void>)
 	{
 		var type = extractFirstArgumentType(handler);
-		return macro $ethis.bindOnceByName($type, $handler);
+		return macro $ethis.bindOnce($type, $handler);
 	}
 
 	macro public function off<T>(ethis : ExprOf<Dispatcher>, handler : ExprOf<T -> Void>)
 	{
 		var type = extractFirstArgumentType(handler);
-		return macro $ethis.unbindOnceByName($type, $handler);
+		return macro $ethis.unbindOnce($type, $handler);
 	}
 
 	@:overload(function(type : Class<Dynamic>):Void{})
@@ -99,7 +99,7 @@ class Dispatcher
 			types = typeHierarchy(type);
 		if(types[types.length-1] != "Dynamic")
 			types.push("Dynamic");
-		return macro $ethis.triggerByNames($v{types}, $value);
+		return macro $ethis.dispatch($v{types}, $value);
 	}
 
 	function triggerByValue<T>(payload : T)
@@ -107,10 +107,10 @@ class Dispatcher
 		var names = [resolveValueType(Type.typeof(payload))];
 		if(names[names.length-1] != "Dynamic")
 			names.push("Dynamic");
-		triggerByNames(names, payload);
+		dispatch(names, payload);
 	}
 
-	function triggerByNames<T>(names : Array<String>, payload : T)
+	function dispatch<T>(names : Array<String>, payload : T)
 	{
 		var i, binds;
 		try
@@ -126,7 +126,7 @@ class Dispatcher
 		} catch (e : EventCancel) { }
 	}
 
-	function bindByName<T>(name : String, handler : T -> Void)
+	function bind<T>(name : String, handler : T -> Void)
 	{
 		var binds = map.get(name);
 		if (null == binds)
@@ -134,16 +134,16 @@ class Dispatcher
 		binds.unshift(handler);
 	}
 
-	function bindOnceByName<T>(name : String, handler : T -> Void)
+	function bindOnce<T>(name : String, handler : T -> Void)
 	{
 		function h(v : T) {
-			unbindByName(name, h);
+			unbind(name, h);
 			handler(v);
 		}
-		bindByName(name, h);
+		bind(name, h);
 	}
 
-	function unbindByName<T>(name : String, ?handler : T -> Void)
+	function unbind<T>(name : String, ?handler : T -> Void)
 	{
 		if (null == handler)
 			map.remove(name);

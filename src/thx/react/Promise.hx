@@ -73,7 +73,7 @@ class Promise<TData>
 	public function failByName<TError>(name : String, failure : TError -> Void)
 	{
 		ensureErrorDispatcher();
-		errorDispatcher.bindByName(name, failure);
+		errorDispatcher.bind(name, failure);
 		poll();
 		return this;
 	}
@@ -87,7 +87,7 @@ class Promise<TData>
 	public function progressByName<TProgress>(name : String, progress : TProgress -> Void)
 	{
 		ensureProgressDispatcher();
-		progressDispatcher.bindByName(name, progress);
+		progressDispatcher.bind(name, progress);
 		poll();
 		return this;
 	}

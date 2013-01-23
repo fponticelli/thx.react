@@ -34,30 +34,30 @@ class TestDispatcher
 	public function testBasics()
 	{
 		var dispatcher = new Dispatcher();
-		dispatcher.bindByName("inc1", increment1);
-		dispatcher.bindByName("inc2", increment2);
-		dispatcher.bindByName("inc2", increment2);
-		dispatcher.triggerByNames(["inc1"], 1);
+		dispatcher.bind("inc1", increment1);
+		dispatcher.bind("inc2", increment2);
+		dispatcher.bind("inc2", increment2);
+		dispatcher.dispatch(["inc1"], 1);
 		Assert.equals(1, counter1);
 		Assert.equals(0, counter2);
-		dispatcher.triggerByNames(["inc2"], 2);
+		dispatcher.dispatch(["inc2"], 2);
 		Assert.equals(1, counter1);
 		Assert.equals(4, counter2);
-		dispatcher.unbindByName("inc2", increment2);
-		dispatcher.triggerByNames(["inc2"], 2);
+		dispatcher.unbind("inc2", increment2);
+		dispatcher.dispatch(["inc2"], 2);
 		Assert.equals(1, counter1);
 		Assert.equals(6, counter2);
-		dispatcher.unbindByName("inc1");
-		dispatcher.triggerByNames(["inc1"], 1);
+		dispatcher.unbind("inc1");
+		dispatcher.dispatch(["inc1"], 1);
 		Assert.equals(1, counter1);
 	}
 
 	public function testBindOnce()
 	{
 		var dispatcher = new Dispatcher();
-		dispatcher.bindOnceByName("inc1", increment1);
-		dispatcher.triggerByNames(["inc1"], 1);
-		dispatcher.triggerByNames(["inc1"], 1);
+		dispatcher.bindOnce("inc1", increment1);
+		dispatcher.dispatch(["inc1"], 1);
+		dispatcher.dispatch(["inc1"], 1);
 		Assert.equals(1, counter1);
 	}
 
@@ -66,12 +66,12 @@ class TestDispatcher
 		var dispatcher = new Dispatcher();
 		var tdynamic = 0,
 			ttyped   = 0;
-		dispatcher.bindByName("Dynamic", function(_) tdynamic++);
-		dispatcher.bindByName("Int", function(_) ttyped++);
-		dispatcher.triggerByNames(["Int", "Dynamic"], 0);
+		dispatcher.bind("Dynamic", function(_) tdynamic++);
+		dispatcher.bind("Int", function(_) ttyped++);
+		dispatcher.dispatch(["Int", "Dynamic"], 0);
 		Assert.equals(1, tdynamic);
 		Assert.equals(1, ttyped);
-		dispatcher.triggerByNames(["Dynamic"], 0);
+		dispatcher.dispatch(["Dynamic"], 0);
 		Assert.equals(2, tdynamic);
 		Assert.equals(1, ttyped);
 	}
