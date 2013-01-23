@@ -110,9 +110,6 @@ class Promise<TData>
 			.progressByName("Dynamic", deferred.notify);
 		return deferred.promise();
 	}
-/*
-     .pipe<TNew>(handler : TData -> Promise<TNew>) : Promise<TNew>
-*/
 }
 
 enum PromiseState<T> {
