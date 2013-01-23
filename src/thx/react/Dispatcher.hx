@@ -77,29 +77,50 @@ class Dispatcher
 	macro public function trigger<T>(ethis : ExprOf<Dispatcher>, value : ExprOf<T>)
 	{
 		var type = exprStringOfType(Context.typeof(value), value.pos);
-		return macro $ethis.triggerByName($type, $value);
+	/*
+		var t = Context.typeof(value);
+		switch(t)
+		{
+			case
+		}
+		var stype = TypeTools.toString(Context.typeof(value));
+		trace(stype);
+		var cls   = Context. Type.resolveClass(stype),
+			types = [stype];
+		while (null != cls)
+		{
+			cls = Type.getSuperClass(cls);
+			if (null == cls) break;
+			types.push(Type.getClassName(cls));
+		}
+		trace(types);
+		*/
+		return macro $ethis.triggerByNames([$type], $value);
 	}
 	
 	function triggerByValue<T>(payload : T)
 	{
 		var name = resolveValueType(Type.typeof(payload));
-		triggerByName(name, payload);
+		_triggerByName(name, payload);
 	}
 	
-	function triggerByName<T>(name : String, payload : T)
+	function _triggerByName<T>(name : String, payload : T)
 	{
-		var binds = map.get(name);
-		if (null == binds) return;
+		triggerByNames("Dynamic" == name ? [name] : [name, "Dynamic"], payload);
+	}
+	
+	function triggerByNames<T>(names : Array<String>, payload : T)
+	{
+		var i, binds;
 		try
 		{
-			for (handler in binds.copy())
-				handler(payload);
-			if (name != "Dynamic")
+			for (name in names)
 			{
-				binds = map.get("Dynamic");
-				if (null == binds) return;
-				for (handler in binds.copy())
-					handler(payload);
+				binds = map.get(name);
+				if (null == binds) continue;
+				i = binds.length;
+				while (i > 0)
+					binds[--i](payload);
 			}
 		} catch (e : EventCancel) { }
 	}
@@ -109,7 +130,7 @@ class Dispatcher
 		var binds = map.get(name);
 		if (null == binds)
 			map.set(name, binds = []);
-		binds.push(handler);
+		binds.unshift(handler);
 	}
 	
 	function bindOnceByName<T>(name : String, handler : T -> Void)

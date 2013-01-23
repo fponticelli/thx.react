@@ -37,18 +37,18 @@ class TestDispatcher
 		dispatcher.bindByName("inc1", increment1);
 		dispatcher.bindByName("inc2", increment2);
 		dispatcher.bindByName("inc2", increment2);
-		dispatcher.triggerByName("inc1", 1);
+		dispatcher.triggerByNames(["inc1"], 1);
 		Assert.equals(1, counter1);
 		Assert.equals(0, counter2);
-		dispatcher.triggerByName("inc2", 2);
+		dispatcher.triggerByNames(["inc2"], 2);
 		Assert.equals(1, counter1);
 		Assert.equals(4, counter2);
 		dispatcher.unbindByName("inc2", increment2);
-		dispatcher.triggerByName("inc2", 2);
+		dispatcher.triggerByNames(["inc2"], 2);
 		Assert.equals(1, counter1);
 		Assert.equals(6, counter2);
 		dispatcher.unbindByName("inc1");
-		dispatcher.triggerByName("inc1", 1);
+		dispatcher.triggerByNames(["inc1"], 1);
 		Assert.equals(1, counter1);
 	}
 	
@@ -56,8 +56,8 @@ class TestDispatcher
 	{
 		var dispatcher = new Dispatcher();
 		dispatcher.bindOnceByName("inc1", increment1);
-		dispatcher.triggerByName("inc1", 1);
-		dispatcher.triggerByName("inc1", 1);
+		dispatcher.triggerByNames(["inc1"], 1);
+		dispatcher.triggerByNames(["inc1"], 1);
 		Assert.equals(1, counter1);
 	}
 	
@@ -68,10 +68,10 @@ class TestDispatcher
 			ttyped   = 0;
 		dispatcher.bindByName("Dynamic", function(_) tdynamic++);
 		dispatcher.bindByName("Int", function(_) ttyped++);
-		dispatcher.triggerByName("Int", 0);
+		dispatcher.triggerByNames(["Int"], 0);
 		Assert.equals(1, tdynamic);
 		Assert.equals(1, ttyped);
-		dispatcher.triggerByName("Dynamic", 0);
+		dispatcher.triggerByNames(["Dynamic"], 0);
 		Assert.equals(2, tdynamic);
 		Assert.equals(1, ttyped);
 	}
