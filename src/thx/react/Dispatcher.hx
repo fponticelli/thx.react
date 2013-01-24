@@ -12,6 +12,8 @@ import haxe.macro.Type.ClassType;
 import haxe.macro.Context;
 #end
 
+using thx.core.Types;
+
 class Dispatcher
 {
 	#if macro
@@ -104,7 +106,7 @@ class Dispatcher
 
 	function triggerByValue<T>(payload : T)
 	{
-		var names = [resolveValueType(Type.typeof(payload))];
+		var names = [Type.typeof(payload).toString()];
 		if(names[names.length-1] != "Dynamic")
 			names.push("Dynamic");
 		dispatch(names, payload);
@@ -157,21 +159,6 @@ class Dispatcher
 					break;
 				}
 			}
-		}
-	}
-
-	static function resolveValueType(t : Type.ValueType)
-	{
-		return switch(t)
-		{
-			case TInt:      "Int";
-			case TFloat:    "Float";
-			case TBool:     "Bool";
-			case TObject:   "Dynamic"; // TODO ?
-			case TFunction: "Function";
-			case TClass(c): Type.getClassName(c);
-			case TEnum(e):  Type.getEnumName(e);
-			case _:         null;
 		}
 	}
 
