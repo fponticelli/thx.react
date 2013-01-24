@@ -125,7 +125,7 @@ class Dispatcher
 				while (i > 0)
 					binds[--i](payload);
 			}
-		} catch (e : EventCancel) { }
+		} catch (e : Propagation) { }
 	}
 
 	function bind<T>(name : String, handler : T -> Void)
@@ -161,18 +161,7 @@ class Dispatcher
 			}
 		}
 	}
-
-	@:access(thx.react.EventCancel)
-	public inline static function cancel()
-	{
-		throw new EventCancel();
-	}
 /*
 add .wait(other : Promise<TData2>) : Promise2<TData, TData2>
 */
-}
-
-class EventCancel
-{
-	private function new() { }
 }
