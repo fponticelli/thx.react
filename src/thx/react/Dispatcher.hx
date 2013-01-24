@@ -17,21 +17,34 @@ using thx.core.Types;
 class Dispatcher
 {
 	#if macro
-	public static function extractFirstArgumentType<T>(handler : ExprOf<T -> Void>)
+	public static function nonOptionalArgumentTypeAsString(fexpr : Expr, index : Int)
 	{
-		var type = Context.typeof(handler);
+		var t  = Context.typeof(fexpr),
+			an = TypeTools.toString(argumentType(t, index));
+		if(argumentIsOptional(t, index))
+			throw "handler argument cannot be optional";
+		return an;
+	}
+
+	public static function argumentIsOptional(type : haxe.macro.Type, pos : Int)
+	{
 		return switch(type)
 		{
-			case TFun(args, _) if(args.length != 1):
-				Context.error("handler function must have arity 1", handler.pos);
-			case TFun(_, ret) if (switch(ret) { case TAbstract(t, _) if(t.toString() != "Void"): true; case _: false; } ):
-				Context.error("handler function must return Void", handler.pos);
-			case TFun(args, _) if(args[0].opt):
-				Context.error("handler function argument cannot be optional", handler.pos);
-			case TFun(args, _):
-				exprStringOfType(args[0].t, handler.pos);
+			case TFun(args, _) if(pos < args.length):
+				args[pos].opt;
 			case _:
-				Context.error("handler must be a function", handler.pos);
+				throw 'type $type is not a function or $pos is not a valid argument position';
+		}
+	}
+
+	public static function argumentType(type : haxe.macro.Type, pos : Int)
+	{
+		return switch(type)
+		{
+			case TFun(args, _) if(pos < args.length):
+				args[pos].t;
+			case _:
+				null;
 		}
 	}
 
@@ -67,20 +80,20 @@ class Dispatcher
 
 	macro public function on<T>(ethis : ExprOf<Dispatcher>, handler : ExprOf<T -> Void>)
 	{
-		var type = extractFirstArgumentType(handler);
-		return macro $ethis.bind($type, $handler);
+		var type = nonOptionalArgumentTypeAsString(handler, 0);
+		return macro $ethis.bind($v{type}, $handler);
 	}
 
 	macro public function one<T>(ethis : ExprOf<Dispatcher>, handler : ExprOf<T -> Void>)
 	{
-		var type = extractFirstArgumentType(handler);
-		return macro $ethis.bindOnce($type, $handler);
+		var type = nonOptionalArgumentTypeAsString(handler, 0);
+		return macro $ethis.bindOnce($v{type}, $handler);
 	}
 
 	macro public function off<T>(ethis : ExprOf<Dispatcher>, handler : ExprOf<T -> Void>)
 	{
-		var type = extractFirstArgumentType(handler);
-		return macro $ethis.unbindOnce($type, $handler);
+		var type = nonOptionalArgumentTypeAsString(handler, 0);
+		return macro $ethis.unbindOnce($v{type}, $handler);
 	}
 
 	@:overload(function(type : Class<Dynamic>):Void{})

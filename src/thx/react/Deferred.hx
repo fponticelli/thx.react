@@ -50,5 +50,4 @@ class Deferred<TData> extends Promise<TData>
 		super.then(success);
 		return this;
 	}
-
 }

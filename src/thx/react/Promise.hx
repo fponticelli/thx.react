@@ -65,11 +65,10 @@ class Promise<TData>
 
 	macro public function fail<TError>(ethis : haxe.macro.Expr.ExprOf<Promise<Dynamic>>, handler : haxe.macro.Expr.ExprOf<TError -> Void>)
 	{
-		var type = Dispatcher.extractFirstArgumentType(handler);
-		return macro $ethis.failByName($type, $handler);
+		var type = Dispatcher.nonOptionalArgumentTypeAsString(handler, 0);
+		return macro $ethis.failByName($v{type}, $handler);
 	}
 
-	// TODO why public is required?
 	public function failByName<TError>(name : String, failure : TError -> Void)
 	{
 		ensureErrorDispatcher();
@@ -80,8 +79,8 @@ class Promise<TData>
 
 	macro public function progress<TProgress>(ethis : haxe.macro.Expr.ExprOf<Promise<Dynamic>>, handler : haxe.macro.Expr.ExprOf<TProgress -> Void>)
 	{
-		var type = Dispatcher.extractFirstArgumentType(handler);
-		return macro $ethis.progressByName($type, $handler);
+		var type = Dispatcher.nonOptionalArgumentTypeAsString(handler, 0);
+		return macro $ethis.progressByName($v{type}, $handler);
 	}
 
 	public function progressByName<TProgress>(name : String, progress : TProgress -> Void)
