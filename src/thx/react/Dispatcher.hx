@@ -41,13 +41,13 @@ class Dispatcher
 	macro public function one<T>(ethis : ExprOf<Dispatcher>, handler : ExprOf<T -> Void>)
 	{
 		var type = nonOptionalArgumentTypeAsString(handler, 0);
-		return macro $ethis.bineOne($v{type}, $handler);
+		return macro $ethis.bindOne($v{type}, $handler);
 	}
 
 	macro public function off<T>(ethis : ExprOf<Dispatcher>, handler : ExprOf<T -> Void>)
 	{
 		var type = nonOptionalArgumentTypeAsString(handler, 0);
-		return macro $ethis.unbindOnce($v{type}, $handler);
+		return macro $ethis.unbind($v{type}, $handler);
 	}
 
 	@:overload(function(type : Class<Dynamic>):Void{})
