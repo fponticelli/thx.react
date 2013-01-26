@@ -55,7 +55,7 @@ class TestDispatcher
 	public function testBindOnce()
 	{
 		var dispatcher = new Dispatcher();
-		dispatcher.bindOnce("inc1", increment1);
+		dispatcher.bindOne("inc1", increment1);
 		dispatcher.dispatch(["inc1"], 1);
 		dispatcher.dispatch(["inc1"], 1);
 		Assert.equals(1, counter1);

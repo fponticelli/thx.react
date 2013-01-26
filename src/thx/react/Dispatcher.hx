@@ -8,8 +8,8 @@ package thx.react;
 #if macro
 import haxe.macro.Expr;
 import haxe.macro.TypeTools;
-import haxe.macro.Type.ClassType;
 import haxe.macro.Context;
+using thx.macro.MacroTypes;
 #end
 
 using thx.core.Types;
@@ -19,56 +19,10 @@ class Dispatcher
 	#if macro
 	public static function nonOptionalArgumentTypeAsString(fexpr : Expr, index : Int)
 	{
-		var t  = Context.typeof(fexpr),
-			an = TypeTools.toString(argumentType(t, index));
-		if(argumentIsOptional(t, index))
+		var t = Context.typeof(fexpr);
+		if(t.argumentIsOptional(index))
 			throw "handler argument cannot be optional";
-		return an;
-	}
-
-	public static function argumentIsOptional(type : haxe.macro.Type, pos : Int)
-	{
-		return switch(type)
-		{
-			case TFun(args, _) if(pos < args.length):
-				args[pos].opt;
-			case _:
-				throw 'type $type is not a function or $pos is not a valid argument position';
-		}
-	}
-
-	public static function argumentType(type : haxe.macro.Type, pos : Int)
-	{
-		return switch(type)
-		{
-			case TFun(args, _) if(pos < args.length):
-				args[pos].t;
-			case _:
-				null;
-		}
-	}
-
-	public static function exprStringOfType(type, pos)
-	{
-		return Context.parse('"' + TypeTools.toString(type) + '"', pos);
-	}
-
-	public static function classHierarchy(cls : ClassType)
-	{
-		var types = [cls.pack.concat([cls.name]).join(".")],
-			parent = null == cls.superClass ? null : classHierarchy(cls.superClass.t.get());
-		if(null != parent)
-			types = types.concat(parent);
-		return types;
-	}
-
-	public static function typeHierarchy(type)
-	{
-		try {
-			return classHierarchy(TypeTools.getClass(type));
-		} catch(e : Dynamic) {
-			return [TypeTools.toString(type)];
-		}
+		return TypeTools.toString(t.typeOfArgument(index));
 	}
 	#end
 
@@ -87,7 +41,7 @@ class Dispatcher
 	macro public function one<T>(ethis : ExprOf<Dispatcher>, handler : ExprOf<T -> Void>)
 	{
 		var type = nonOptionalArgumentTypeAsString(handler, 0);
-		return macro $ethis.bindOnce($v{type}, $handler);
+		return macro $ethis.bineOne($v{type}, $handler);
 	}
 
 	macro public function off<T>(ethis : ExprOf<Dispatcher>, handler : ExprOf<T -> Void>)
@@ -111,7 +65,7 @@ class Dispatcher
 	macro public function trigger<T>(ethis : ExprOf<Dispatcher>, value : ExprOf<T>)
 	{
 		var type  = Context.typeof(value),
-			types = typeHierarchy(type);
+			types = type.typeInheritance();
 		if(types[types.length-1] != "Dynamic")
 			types.push("Dynamic");
 		return macro $ethis.dispatch($v{types}, $value);
@@ -149,7 +103,7 @@ class Dispatcher
 		binds.unshift(handler);
 	}
 
-	function bindOnce<T>(name : String, handler : T -> Void)
+	function bindOne<T>(name : String, handler : T -> Void)
 	{
 		function h(v : T) {
 			unbind(name, h);
