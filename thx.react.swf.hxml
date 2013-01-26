@@ -1,0 +1,7 @@
+-cp src
+-cp test
+-cp ../thx.core/src
+-lib utest
+-swf bin/thxreact.swf
+-D haxe3
+-main TestAll

@@ -123,7 +123,7 @@ class TestDispatcher
 	{
 		var dispatcher = new Dispatcher();
 		dispatcher.on(function(test : MyEnum) Assert.same(MyValue, test));
-		dispatcher.triggerByValue(MyValue);
+		dispatcher.dispatchValue(MyValue);
 	}
 
 	public function testHierarchy()

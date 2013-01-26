@@ -34,13 +34,13 @@ class Promise<TData>
 			case Failure(error):
 				if (null != errorDispatcher)
 				{
-					errorDispatcher.triggerByValue(error);
+					errorDispatcher.dispatchValue(error);
 					errorDispatcher = null;
 				}
 			case Progress(data):
 				if (null != progressDispatcher)
 				{
-					progressDispatcher.triggerByValue(data);
+					progressDispatcher.dispatchValue(data);
 				}
 			case Idle:
 		}

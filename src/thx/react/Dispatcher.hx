@@ -1,9 +1,9 @@
-package thx.react;
-
 /**
  * ...
  * @author Franco Ponticelli
  */
+
+package thx.react;
 
 #if macro
 import haxe.macro.Expr;
@@ -71,7 +71,7 @@ class Dispatcher
 		return macro $ethis.dispatch($v{types}, $value);
 	}
 
-	function triggerByValue<T>(payload : T)
+	function dispatchValue<T>(payload : T)
 	{
 		var names = [Type.typeof(payload).toString()];
 		if(names[names.length-1] != "Dynamic")
@@ -90,7 +90,7 @@ class Dispatcher
 				if (null == binds) continue;
 				i = binds.length;
 				while (i > 0)
-					binds[--i](payload);
+					Reflect.callMethod(null, binds[--i], [payload]);
 			}
 		} catch (e : Propagation) { }
 	}

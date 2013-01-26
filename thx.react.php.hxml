@@ -1,0 +1,7 @@
+-cp src
+-cp test
+-cp ../thx.core/src
+-lib utest
+-php bin/php
+-D haxe3
+-main TestAll
