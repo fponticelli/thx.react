@@ -90,7 +90,7 @@ class Dispatcher
 				if (null == binds) continue;
 				i = binds.length;
 				while (i > 0)
-					Reflect.callMethod(null, binds[--i], [payload]);
+					binds[--i](payload);
 			}
 		} catch (e : Propagation) { }
 	}
