@@ -63,7 +63,16 @@ class TestDeferred
 	public function testPipe()
 	{
 		var test = null;
-		Deferred.value(1).pipe(function(i : Int) return Deferred.value("#" + i)).then(function(s : String) test = s);
+		Deferred.value(1)
+			.pipe(function(i : Int) return Deferred.value("#" + i))
+			.then(function(s : String) test = s);
 		Assert.equals("#1", test);
+	}
+	
+	public function testException()
+	{
+		Deferred.value(1)
+			.then(function(i : Int) throw "argh!")
+			.fail(function(e : Dynamic) Assert.equals("argh!", e));
 	}
 }

@@ -29,8 +29,14 @@ class Promise<TData>
 		{
 			case Success(data):
 				var handler;
-				while (null != (handler = queue.shift()))
-					handler(data);
+				try
+				{
+					while (null != (handler = queue.shift()))
+						handler(data);
+				} catch (e : Dynamic) {
+					changeState(Exception(e));
+					poll();
+				}
 			case Failure(error):
 				if (null != errorDispatcher)
 				{
@@ -43,6 +49,8 @@ class Promise<TData>
 					progressDispatcher.dispatchValue(data);
 				}
 			case Idle:
+			case Exception(_):
+				throw "Exception state should never be in the poll";
 		}
 	}
 
@@ -57,6 +65,8 @@ class Promise<TData>
 				state = newstate;
 			case [Progress(_), Progress(_)]:
 				state = newstate;
+			case [Success(_), Exception(e)]:
+				state = Failure(e);
 			case [_, _]:
 				throw "promise was already resolved/failed, can't apply new state $newstate";
 		}
@@ -116,4 +126,5 @@ enum PromiseState<T> {
 	Failure(error : Dynamic);
 	Progress(data : Dynamic);
 	Success(data : T);
+	Exception(error : Dynamic);
 }
