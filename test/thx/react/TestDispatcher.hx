@@ -52,7 +52,7 @@ class TestDispatcher
 		Assert.equals(1, counter1);
 	}
 
-	public function testBindOnce()
+	public function testBindOne()
 	{
 		var dispatcher = new Dispatcher();
 		dispatcher.bindOne("inc1", increment1);
@@ -157,7 +157,7 @@ class B extends A
 {
 }
 
-private enum MyEnum
+enum MyEnum
 {
 	MyValue;
 }
