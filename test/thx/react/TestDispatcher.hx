@@ -101,7 +101,7 @@ class TestDispatcher
 		dispatcher.on(function(i : Int) { test_i = i; } );
 		dispatcher.on(function(b : Bool) { test_b = b; } );
 
-		dispatcher.clear(String);
+		dispatcher.clearType(String);
 		dispatcher.trigger("Haxe");
 		dispatcher.trigger(1);
 		dispatcher.trigger(true);
@@ -109,7 +109,7 @@ class TestDispatcher
 		Assert.equals(1, test_i);
 		Assert.isTrue(test_b);
 
-		dispatcher.clear("Int");
+		dispatcher.clearName("Int");
 		dispatcher.trigger(2);
 		Assert.equals(1, test_i);
 		Assert.isTrue(test_b);

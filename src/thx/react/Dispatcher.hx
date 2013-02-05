@@ -52,16 +52,19 @@ class Dispatcher
 		return macro $ethis.unbind($v{type}, $handler);
 	}
 
-	@:overload(function(type : Class<Dynamic>):Void{})
-	public function clear(?type : String)
+	public function clearName(name : String)
 	{
-		if (null == type) {
-			map = new Map();
-		} else if (Std.is(type, String)) {
-			map.remove(type);
-		} else {
-			map.remove(Type.getClassName(cast type));
-		}
+		map.remove(name);
+	}
+
+	public function clearType(type : Class<Dynamic>)
+	{
+		clearName(Type.getClassName(type));
+	}
+
+	public function clear()
+	{
+		map = new Map();
 	}
 
 	macro public function trigger<T>(ethis : ExprOf<Dispatcher>, value : ExprOf<T>)
@@ -158,7 +161,7 @@ private class DispatcherMulti
 				types.push("Dynamic");
 			alltypes.push(types);
 		}
-		return thx.core.Arrays.crossNested(alltypes).map(function(a) return a.join(KEY_SEPARATOR));
+		return thx.core.Arrays.crossMulti(alltypes).map(function(a) return a.join(KEY_SEPARATOR));
 	}
 	#end
 	
@@ -173,7 +176,7 @@ private class DispatcherMulti
 				types.push("Dynamic");
 			alltypes.push(types);
 		}
-		return thx.core.Arrays.crossNested(alltypes).map(function(a) return a.join(KEY_SEPARATOR));
+		return thx.core.Arrays.crossMulti(alltypes).map(function(a) return a.join(KEY_SEPARATOR));
 	}
 	
 	public static function dispatchBinds(map : StringMap<Array<Dynamic>>, names : Array<String>, payload: Array<Dynamic>)
@@ -220,16 +223,20 @@ private class DispatcherMulti
 			}
 		}
 	}
-	
-	function clearBinds(?types : Array<String>)
+
+	public function clear()
 	{
-		if (null == types) {
-			map = new StringMap();
-		} else if (Std.is(types[0], String)) {
-			map.remove(types.join(KEY_SEPARATOR));
-		} else {
-			map.remove(types.map(cast Type.getClassName).join(KEY_SEPARATOR));
-		}
+		map = new StringMap();
+	}
+	
+	function clearNameArray(names : Array<String>)
+	{
+		map.remove(names.join(KEY_SEPARATOR));
+	}
+	
+	function clearTypeArray(types : Array<Class<Dynamic>>)
+	{
+		clearNameArray(types.map(Type.getClassName));
 	}
 }
 
@@ -289,11 +296,15 @@ class Dispatcher2 extends DispatcherMulti
 	{
 		DispatcherMulti.unbindMap(map, name, handler);
 	}
-	
-	@:overload(function(type1 : Class<Dynamic>, type2 : Class<Dynamic>):Void{})
-	public function clear(?type1 : String, ?type2 : String)
+
+	public function clearNames(name1 : String, name2 : String)
 	{
-		clearBinds(null == type2 ? null : [type1, type2]);
+		clearNameArray([name1, name2]);
+	}
+
+	public function clearTypes(type1 : Class<Dynamic>, type2 : Class<Dynamic>)
+	{
+		clearTypeArray([type1, type2]);
 	}
 }
 
@@ -353,6 +364,16 @@ class Dispatcher3 extends DispatcherMulti
 	{
 		DispatcherMulti.unbindMap(map, name, handler);
 	}
+
+	public function clearNames(name1 : String, name2 : String, name3 : String)
+	{
+		clearNameArray([name1, name2, name3]);
+	}
+
+	public function clearTypes(type1 : Class<Dynamic>, type2 : Class<Dynamic>, type3 : Class<Dynamic>)
+	{
+		clearTypeArray([type1, type2, type3]);
+	}
 }
 
 class Dispatcher4 extends DispatcherMulti
@@ -411,6 +432,16 @@ class Dispatcher4 extends DispatcherMulti
 	{
 		DispatcherMulti.unbindMap(map, name, handler);
 	}
+
+	public function clearNames(name1 : String, name2 : String, name3 : String, name4 : String)
+	{
+		clearNameArray([name1, name2, name3, name4]);
+	}
+
+	public function clearTypes(type1 : Class<Dynamic>, type2 : Class<Dynamic>, type3 : Class<Dynamic>, type4 : Class<Dynamic>)
+	{
+		clearTypeArray([type1, type2, type3, type4]);
+	}
 }
 
 class Dispatcher5 extends DispatcherMulti
@@ -468,5 +499,15 @@ class Dispatcher5 extends DispatcherMulti
 	public function unbind<T1, T2, T3, T4, T5>(name : String, ?handler : T1 -> T2 -> T3 -> T4 -> T5 -> Void)
 	{
 		DispatcherMulti.unbindMap(map, name, handler);
+	}
+
+	public function clearNames(name1 : String, name2 : String, name3 : String, name4 : String, name5 : String)
+	{
+		clearNameArray([name1, name2, name3, name4, name5]);
+	}
+
+	public function clearTypes(type1 : Class<Dynamic>, type2 : Class<Dynamic>, type3 : Class<Dynamic>, type4 : Class<Dynamic>, type5 : Class<Dynamic>)
+	{
+		clearTypeArray([type1, type2, type3, type4, type5]);
 	}
 }
