@@ -151,32 +151,37 @@ class TestDispatcher
 	{
 		var counter = 0,
 			dispatcher = new Dispatcher(),
-			f2 = function(i : Int)
+			f4 = function(i : Int)
+			{
+				counter += i * 4;
+			},
+			f3 = function(i : Int)
 			{
 				Assert.fail("should never get here");
-				counter += i * 2;
+				counter += i * 3;
 			},
 			f1 = function(i : Int)
 			{
-				trace("f1");
-				trace(i);
-				trace(counter);
-				Assert.equals(0, counter);
 				counter += i;
 				Assert.equals(1, counter);
-				dispatcher.off(f2);
+			},
+			f2 = function(i : Int)
+			{
+				counter += i * 2;
+				dispatcher.off(f3);
+				dispatcher.off(f1);
 			};
-		Assert.equals(0, counter);
 		dispatcher.on(f1);
-		Assert.equals(0, counter);
 		dispatcher.on(f2);
-		Assert.equals(0, counter);
+		dispatcher.on(f3);
+		dispatcher.on(f4);
 		
-				trace(counter);
 		dispatcher.trigger(1);
-				trace(counter);
-		Assert.equals(1, counter);
+		Assert.equals(7, counter);
 	}
+
+	// TODO test a handler that triggers an event on the same dispatcher (it resets _iterator_index)
+	// TODO needs refactoring!
 }
 
 class A

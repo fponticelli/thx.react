@@ -84,6 +84,7 @@ class Dispatcher
 		dispatch(names, payload);
 	}
 
+	var _iterator_index : Int = 0;
 	public function dispatch<T>(names : Array<String>, payload : T)
 	{
 		var i, binds;
@@ -93,9 +94,9 @@ class Dispatcher
 			{
 				binds = map.get(""+name); // TODO this seems a bug in Neko
 				if (null == binds) continue;
-				var i = 0;
-				while (i < binds.length)
-					binds[i++](payload);
+				_iterator_index = 0;
+				while (_iterator_index < binds.length)
+					binds[_iterator_index++](payload);
 			}
 		} catch (e : Propagation) { }
 	}
@@ -129,6 +130,8 @@ class Dispatcher
 			{
 				if (Reflect.compareMethods(handler, binds[i])) {
 					binds.splice(i, 1);
+					if(i < _iterator_index)
+						_iterator_index--;
 					break;
 				}
 				i++;
@@ -181,9 +184,10 @@ private class DispatcherMulti
 		return thx.core.Arrays.crossMulti(alltypes).map(function(a) return a.join(KEY_SEPARATOR));
 	}
 	
-	public static function dispatchBinds(map : StringMap<Array<Dynamic>>, names : Array<String>, payload: Array<Dynamic>)
+	var _iterator_index : Int = 0;
+	function dispatchBinds(names : Array<String>, payload: Array<Dynamic>)
 	{
-		var i = 0, binds = null;
+		var binds = null;
 		try
 		{
 			for (name in names)
@@ -192,16 +196,16 @@ private class DispatcherMulti
 					continue;
 				binds = map.get(name);
 				if (null == binds) continue;
-				var i = 0;
-				while (i < binds.length)
+				_iterator_index = 0;
+				while (_iterator_index < binds.length)
 				{
-					Reflect.callMethod(null, binds[i++], payload);
+					Reflect.callMethod(null, binds[_iterator_index++], payload);
 				}
 			}
 		} catch (e : Propagation) { }
 	}
 	
-	public static function bindMap(map : StringMap<Array<Dynamic>>, name : String, handler : Dynamic)
+	function bindMap(name : String, handler : Dynamic)
 	{
 		var binds = map.get(name);
 		if (null == binds)
@@ -209,7 +213,7 @@ private class DispatcherMulti
 		binds.push(handler);
 	}
 	
-	public static function unbindMap(map : StringMap<Array<Dynamic>>, name : String, ?handler : Dynamic)
+	function unbindMap(name : String, ?handler : Dynamic)
 	{
 		if (null == handler)
 			map.remove(name);
@@ -221,6 +225,8 @@ private class DispatcherMulti
 			{
 				if (Reflect.compareMethods(handler, binds[i])) {
 					binds.splice(i, 1);
+					if(i < _iterator_index)
+						_iterator_index--;
 					break;
 				}
 				i++;
@@ -279,26 +285,26 @@ class Dispatcher2 extends DispatcherMulti
 
 	public function dispatch<T1, T2>(names : Array<String>, payload1 : T1, payload2 : T2)
 	{
-		DispatcherMulti.dispatchBinds(map, names, [payload1, payload2]);
+		dispatchBinds(names, [payload1, payload2]);
 	}
 
 	public function bind<T1, T2>(name : String, handler : T1 -> T2 -> Void)
 	{
-		DispatcherMulti.bindMap(map, name, handler);
+		bindMap(name, handler);
 	}
 
 	public function bindOne<T1, T2>(name : String, handler : T1 -> T2 -> Void)
 	{
 		function h(v1 : T1, v2 : T2) {
-			DispatcherMulti.unbindMap(map, name, h);
+			unbindMap(name, h);
 			handler(v1, v2);
 		}
-		DispatcherMulti.bindMap(map, name, h);
+		bindMap(name, h);
 	}
 
 	public function unbind<T1, T2>(name : String, ?handler : T1 -> T2 -> Void)
 	{
-		DispatcherMulti.unbindMap(map, name, handler);
+		unbindMap(name, handler);
 	}
 
 	public function clearNames(name1 : String, name2 : String)
@@ -347,26 +353,26 @@ class Dispatcher3 extends DispatcherMulti
 
 	public function dispatch<T1, T2, T3>(names : Array<String>, payload1 : T1, payload2 : T2, payload3 : T3)
 	{
-		DispatcherMulti.dispatchBinds(map, names, [payload1, payload2, payload3]);
+		dispatchBinds(names, [payload1, payload2, payload3]);
 	}
 
 	public function bind<T1, T2, T3>(name : String, handler : T1 -> T2 -> T3 -> Void)
 	{
-		DispatcherMulti.bindMap(map, name, handler);
+		bindMap(name, handler);
 	}
 
 	public function bindOne<T1, T2, T3>(name : String, handler : T1 -> T2 -> T3 -> Void)
 	{
 		function h(v1 : T1, v2 : T2, v3 : T3) {
-			DispatcherMulti.unbindMap(map, name, h);
+			unbindMap(name, h);
 			handler(v1, v2, v3);
 		}
-		DispatcherMulti.bindMap(map, name, h);
+		bindMap(name, h);
 	}
 
 	public function unbind<T1, T2, T3>(name : String, ?handler : T1 -> T2 -> T3 -> Void)
 	{
-		DispatcherMulti.unbindMap(map, name, handler);
+		unbindMap(name, handler);
 	}
 
 	public function clearNames(name1 : String, name2 : String, name3 : String)
@@ -415,26 +421,26 @@ class Dispatcher4 extends DispatcherMulti
 
 	public function dispatch<T1, T2, T3, T4>(names : Array<String>, payload1 : T1, payload2 : T2, payload3 : T3, payload4 : T4)
 	{
-		DispatcherMulti.dispatchBinds(map, names, [payload1, payload2, payload3, payload4]);
+		dispatchBinds(names, [payload1, payload2, payload3, payload4]);
 	}
 
 	public function bind<T1, T2, T3, T4>(name : String, handler : T1 -> T2 -> T3 -> T4 -> Void)
 	{
-		DispatcherMulti.bindMap(map, name, handler);
+		bindMap(name, handler);
 	}
 
 	public function bindOne<T1, T2, T3, T4>(name : String, handler : T1 -> T2 -> T3 -> T4 -> Void)
 	{
 		function h(v1 : T1, v2 : T2, v3 : T3, v4 : T4) {
-			DispatcherMulti.unbindMap(map, name, h);
+			unbindMap(name, h);
 			handler(v1, v2, v3, v4);
 		}
-		DispatcherMulti.bindMap(map, name, h);
+		bindMap(name, h);
 	}
 
 	public function unbind<T1, T2, T3, T4>(name : String, ?handler : T1 -> T2 -> T3 -> T4 -> Void)
 	{
-		DispatcherMulti.unbindMap(map, name, handler);
+		unbindMap(name, handler);
 	}
 
 	public function clearNames(name1 : String, name2 : String, name3 : String, name4 : String)
@@ -483,26 +489,26 @@ class Dispatcher5 extends DispatcherMulti
 
 	public function dispatch<T1, T2, T3, T4, T5>(names : Array<String>, payload1 : T1, payload2 : T2, payload3 : T3, payload4 : T4, payload5 : T5)
 	{
-		DispatcherMulti.dispatchBinds(map, names, [payload1, payload2, payload3, payload4, payload5]);
+		dispatchBinds(names, [payload1, payload2, payload3, payload4, payload5]);
 	}
 
 	public function bind<T1, T2, T3, T4, T5>(name : String, handler : T1 -> T2 -> T3 -> T4 -> T5 -> Void)
 	{
-		DispatcherMulti.bindMap(map, name, handler);
+		bindMap(name, handler);
 	}
 
 	public function bindOne<T1, T2, T3, T4, T5>(name : String, handler : T1 -> T2 -> T3 -> T4 -> T5 -> Void)
 	{
 		function h(v1 : T1, v2 : T2, v3 : T3, v4 : T4, v5 : T5) {
-			DispatcherMulti.unbindMap(map, name, h);
+			unbindMap(name, h);
 			handler(v1, v2, v3, v4, v5);
 		}
-		DispatcherMulti.bindMap(map, name, h);
+		bindMap(name, h);
 	}
 
 	public function unbind<T1, T2, T3, T4, T5>(name : String, ?handler : T1 -> T2 -> T3 -> T4 -> T5 -> Void)
 	{
-		DispatcherMulti.unbindMap(map, name, handler);
+		unbindMap(name, handler);
 	}
 
 	public function clearNames(name1 : String, name2 : String, name3 : String, name4 : String, name5 : String)
