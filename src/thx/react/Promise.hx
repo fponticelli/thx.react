@@ -101,10 +101,15 @@ class Promise<TData>
 		return this;
 	}
 
-	public function then(success : TData -> Void)
+	public function then(success : TData -> Void, ?failure : Dynamic -> Void)
 	{
 		queue.push(success);
-		poll();
+		if (null != failure)
+		{
+			failByName("Dynamic", failure);
+		} else {
+			poll();
+		}
 		return this;
 	}
 

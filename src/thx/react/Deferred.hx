@@ -45,9 +45,9 @@ class Deferred<TData> extends Promise<TData>
 		return this;
 	}
 
-	override public function then(success : TData -> Void) : Deferred<TData>
+	override public function then(success : TData -> Void, ?failure : Dynamic -> Void) : Deferred<TData>
 	{
-		super.then(success);
+		super.then(success, failure);
 		return this;
 	}
 }

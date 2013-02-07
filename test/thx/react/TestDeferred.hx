@@ -75,4 +75,14 @@ class TestDeferred
 			.then(function(i : Int) throw "argh!")
 			.fail(function(e : Dynamic) Assert.equals("argh!", e));
 	}
+	
+	public function testThenFailure()
+	{
+		new Deferred()
+			.then(
+				function(i : Int) Assert.fail(),
+				function(e : Dynamic) Assert.isTrue(true)
+			)
+			.reject(1);
+	}
 }
