@@ -146,6 +146,37 @@ class TestDispatcher
 		dispatcher.trigger(1);
 		Assert.equals(321, counter);
 	}
+	
+	public function testRemoveHandlerFromHandler()
+	{
+		var counter = 0,
+			dispatcher = new Dispatcher(),
+			f2 = function(i : Int)
+			{
+				Assert.fail("should never get here");
+				counter += i * 2;
+			},
+			f1 = function(i : Int)
+			{
+				trace("f1");
+				trace(i);
+				trace(counter);
+				Assert.equals(0, counter);
+				counter += i;
+				Assert.equals(1, counter);
+				dispatcher.off(f2);
+			};
+		Assert.equals(0, counter);
+		dispatcher.on(f1);
+		Assert.equals(0, counter);
+		dispatcher.on(f2);
+		Assert.equals(0, counter);
+		
+				trace(counter);
+		dispatcher.trigger(1);
+				trace(counter);
+		Assert.equals(1, counter);
+	}
 }
 
 class A

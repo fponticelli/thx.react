@@ -93,9 +93,9 @@ class Dispatcher
 			{
 				binds = map.get(""+name); // TODO this seems a bug in Neko
 				if (null == binds) continue;
-				i = binds.length;
-				while (i > 0)
-					binds[--i](payload);
+				var i = 0;
+				while (i < binds.length)
+					binds[i++](payload);
 			}
 		} catch (e : Propagation) { }
 	}
@@ -105,7 +105,7 @@ class Dispatcher
 		var binds = map.get(name);
 		if (null == binds)
 			map.set(name, binds = []);
-		binds.unshift(handler);
+		binds.push(handler);
 	}
 
 	public function bindOne<T>(name : String, handler : T -> Void)
@@ -124,12 +124,14 @@ class Dispatcher
 		else {
 			var binds = map.get(name);
 			if (null == binds) return;
-			for (i in 0...binds.length)
+			var i = 0;
+			while (i < binds.length)
 			{
 				if (Reflect.compareMethods(handler, binds[i])) {
 					binds.splice(i, 1);
 					break;
 				}
+				i++;
 			}
 		}
 	}
@@ -190,10 +192,10 @@ private class DispatcherMulti
 					continue;
 				binds = map.get(name);
 				if (null == binds) continue;
-				i = binds.length;
-				while (i > 0)
+				var i = 0;
+				while (i < binds.length)
 				{
-					Reflect.callMethod(null, binds[--i], payload);
+					Reflect.callMethod(null, binds[i++], payload);
 				}
 			}
 		} catch (e : Propagation) { }
@@ -204,7 +206,7 @@ private class DispatcherMulti
 		var binds = map.get(name);
 		if (null == binds)
 			map.set(name, binds = []);
-		binds.unshift(handler);
+		binds.push(handler);
 	}
 	
 	public static function unbindMap(map : StringMap<Array<Dynamic>>, name : String, ?handler : Dynamic)
@@ -214,12 +216,14 @@ private class DispatcherMulti
 		else {
 			var binds = map.get(name);
 			if (null == binds) return;
-			for (i in 0...binds.length)
+			var i = 0;
+			while (i < binds.length)
 			{
 				if (Reflect.compareMethods(handler, binds[i])) {
 					binds.splice(i, 1);
 					break;
 				}
+				i++;
 			}
 		}
 	}
