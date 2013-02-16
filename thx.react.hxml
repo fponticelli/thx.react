@@ -5,3 +5,4 @@
 -neko bin/thx.react.n
 -D haxe3
 -main TestAll
+-cmd neko bin/thx.react.n

@@ -15,6 +15,7 @@ using thx.macro.MacroTypes;
 #end
 
 using thx.core.Types;
+import thx.react.ds.FunctionList;
 
 class Dispatcher
 {
@@ -28,7 +29,7 @@ class Dispatcher
 	}
 	#end
 
-	var map : Map<String, Array<Dynamic -> Void>>;
+	var map : Map<String, FunctionList>;
 	public function new()
 	{
 		map = new Map();
@@ -84,7 +85,6 @@ class Dispatcher
 		dispatch(names, payload);
 	}
 
-	var _iterator_index : Int = 0;
 	public function dispatch<T>(names : Array<String>, payload : T)
 	{
 		var i, binds;
@@ -94,9 +94,8 @@ class Dispatcher
 			{
 				binds = map.get(""+name); // TODO this seems a bug in Neko
 				if (null == binds) continue;
-				_iterator_index = 0;
-				while (_iterator_index < binds.length)
-					binds[_iterator_index++](payload);
+				for(handler in binds)
+					handler(payload);
 			}
 		} catch (e : Propagation) { }
 	}
@@ -105,8 +104,8 @@ class Dispatcher
 	{
 		var binds = map.get(name);
 		if (null == binds)
-			map.set(name, binds = []);
-		binds.push(handler);
+			map.set(name, binds = new FunctionList());
+		binds.add(handler);
 	}
 
 	public function bindOne<T>(name : String, handler : T -> Void)
@@ -125,17 +124,7 @@ class Dispatcher
 		else {
 			var binds = map.get(name);
 			if (null == binds) return;
-			var i = 0;
-			while (i < binds.length)
-			{
-				if (Reflect.compareMethods(handler, binds[i])) {
-					binds.splice(i, 1);
-					if(i < _iterator_index)
-						_iterator_index--;
-					break;
-				}
-				i++;
-			}
+			binds.remove(handler);
 		}
 	}
 }
@@ -143,10 +132,10 @@ class Dispatcher
 private class DispatcherMulti
 {
 	inline static var KEY_SEPARATOR : String = "|";
-	var map : StringMap<Array<Dynamic>>;
+	var map : Map<String, FunctionList>;
 	public function new()
 	{
-		map = new StringMap();
+		map = new Map();
 	}
 
 	#if macro
@@ -184,7 +173,6 @@ private class DispatcherMulti
 		return thx.core.Arrays.crossMulti(alltypes).map(function(a) return a.join(KEY_SEPARATOR));
 	}
 	
-	var _iterator_index : Int = 0;
 	function dispatchBinds(names : Array<String>, payload: Array<Dynamic>)
 	{
 		var binds = null;
@@ -196,11 +184,8 @@ private class DispatcherMulti
 					continue;
 				binds = map.get(name);
 				if (null == binds) continue;
-				_iterator_index = 0;
-				while (_iterator_index < binds.length)
-				{
-					Reflect.callMethod(null, binds[_iterator_index++], payload);
-				}
+				for(handler in binds)
+					Reflect.callMethod(null, handler, payload);
 			}
 		} catch (e : Propagation) { }
 	}
@@ -209,8 +194,8 @@ private class DispatcherMulti
 	{
 		var binds = map.get(name);
 		if (null == binds)
-			map.set(name, binds = []);
-		binds.push(handler);
+			map.set(name, binds = new FunctionList());
+		binds.add(handler);
 	}
 	
 	function unbindMap(name : String, ?handler : Dynamic)
@@ -220,17 +205,7 @@ private class DispatcherMulti
 		else {
 			var binds = map.get(name);
 			if (null == binds) return;
-			var i = 0;
-			while (i < binds.length)
-			{
-				if (Reflect.compareMethods(handler, binds[i])) {
-					binds.splice(i, 1);
-					if(i < _iterator_index)
-						_iterator_index--;
-					break;
-				}
-				i++;
-			}
+			binds.remove(handler);
 		}
 	}
 
