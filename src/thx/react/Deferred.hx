@@ -30,7 +30,7 @@ class Deferred<TData> extends Promise<TData>
 		return this;
 	}
 
-	public function promise() : Promise<TData> return this
+	public function promise() : Promise<TData> return this;
 
 	// OVERRIDES TO RETURN PROPER TYPE
 	override public function failByName<TError>(name : String, failure : TError -> Void) : Deferred<TData>

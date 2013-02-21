@@ -125,10 +125,10 @@ class TestDispatcher2
 	{
 		var dispatcher = new Dispatcher2();
 		dispatcher.on(function(test : MyEnum, s_test : String) {
-			Assert.same(MyValue, test);
+			Assert.same(MyEnum.MyValue, test);
 			Assert.same("Haxe", s_test);
 		});
-		dispatcher.dispatchValue(MyValue, "Haxe");
+		dispatcher.dispatchValue(MyEnum.MyValue, "Haxe");
 	}
 
 	public function testHierarchy()

@@ -122,8 +122,8 @@ class TestDispatcher
 	public function testTriggerByValue()
 	{
 		var dispatcher = new Dispatcher();
-		dispatcher.on(function(test : MyEnum) Assert.same(MyValue, test));
-		dispatcher.dispatchValue(MyValue);
+		dispatcher.on(function(test : MyEnum) Assert.same(MyEnum.MyValue, test));
+		dispatcher.dispatchValue(MyEnum.MyValue);
 	}
 
 	public function testHierarchy()
@@ -212,18 +212,4 @@ class TestDispatcher
 		dispatcher.trigger(1);
 		Assert.equals(90, counter);
 	}
-}
-
-class A
-{
-	public function new() { }
-}
-
-class B extends A
-{
-}
-
-enum MyEnum
-{
-	MyValue;
 }

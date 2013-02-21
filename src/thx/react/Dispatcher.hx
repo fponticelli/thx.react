@@ -211,7 +211,7 @@ private class DispatcherMulti
 
 	public function clear()
 	{
-		map = new StringMap();
+		map = new Map();
 	}
 	
 	function clearNameArray(names : Array<String>)

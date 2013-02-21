@@ -54,8 +54,8 @@ class Promise<TData>
 		}
 	}
 
-	function ensureErrorDispatcher() if (null == errorDispatcher) errorDispatcher = new Dispatcher()
-	function ensureProgressDispatcher() if (null == progressDispatcher) progressDispatcher = new Dispatcher()
+	function ensureErrorDispatcher() if (null == errorDispatcher) errorDispatcher = new Dispatcher();
+	function ensureProgressDispatcher() if (null == progressDispatcher) progressDispatcher = new Dispatcher();
 
 	function changeState(newstate : PromiseState<TData>)
 	{
