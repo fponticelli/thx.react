@@ -15,18 +15,18 @@ class Deferred<TData> extends Promise<TData>
 	public function resolve(data : TData)
 	{
 		changeState(Success(data));
-		return this;
+		return promise();
 	}
 
 	public function reject<TError>(error : TError)
 	{
-		changeState(Failure(error));
-		return this;
+		changeState(Failure([error]));
+		return promise();
 	}
 
 	public function notify<TProgress>(data : TProgress)
 	{
-		changeState(Progress(data));
+		changeState(Progress([data]));
 		return this;
 	}
 

@@ -12,25 +12,6 @@ class TestDispatcher
 {
 	public function new() {}
 
-	public var counter1 : Int = 0;
-	public var counter2 : Int = 0;
-
-	public function setup()
-	{
-		counter1 = 0;
-		counter2 = 0;
-	}
-
-	public function increment1(i : Int)
-	{
-		counter1 += i;
-	}
-
-	public function increment2(i : Int)
-	{
-		counter2 += i;
-	}
-
 	public function testOn()
 	{
 		var dispatcher = new Dispatcher();
@@ -74,11 +55,26 @@ class TestDispatcher
 		Assert.isTrue(test_b);
 	}
 
+	public function testOn2()
+	{
+		var dispatcher = new Dispatcher();
+		var test_s = null;
+		var test_i = 0;
+		dispatcher.on(function(name : String, i : Int) { test_s = name + i; } );
+		dispatcher.on(function(i1 : Int, i2 : Int) { test_i = i1 + i2; } );
+		dispatcher.trigger("Haxe", 2);
+		Assert.equals("Haxe2", test_s);
+		Assert.equals(0, test_i);
+		dispatcher.trigger(3, 6);
+		Assert.equals("Haxe2", test_s);
+		Assert.equals(9, test_i);
+	}
+
 	public function testTriggerByValue()
 	{
 		var dispatcher = new Dispatcher();
 		dispatcher.on(function(test : MyEnum) Assert.same(MyEnum.MyValue, test));
-		dispatcher.triggerDynamic(MyEnum.MyValue);
+		dispatcher.triggerDynamic([MyEnum.MyValue]);
 	}
 
 	public function testHierarchy()

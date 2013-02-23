@@ -34,19 +34,19 @@ class Promise<TData>
 					while (null != (handler = queue.shift()))
 						handler(data);
 				} catch (e : Dynamic) {
-					changeState(ProgressException(e));
+					changeState(ProgressException([e]));
 					poll();
 				}
-			case Failure(error):
+			case Failure(args):
 				if (null != errorDispatcher)
 				{
-					errorDispatcher.triggerDynamic(error);
+					errorDispatcher.triggerDynamic(args);
 					errorDispatcher = null;
 				}
-			case Progress(data):
+			case Progress(args):
 				if (null != progressDispatcher)
 				{
-					progressDispatcher.triggerDynamic(data);
+					progressDispatcher.triggerDynamic(args);
 				}
 			case Idle:
 			case ProgressException(_):
@@ -54,8 +54,16 @@ class Promise<TData>
 		}
 	}
 
-	function ensureErrorDispatcher() if (null == errorDispatcher) errorDispatcher = new Dispatcher();
-	function ensureProgressDispatcher() if (null == progressDispatcher) progressDispatcher = new Dispatcher();
+	function getErrorDispatcher()
+	{
+		if (null == errorDispatcher) errorDispatcher = new Dispatcher();
+		return errorDispatcher;
+	}
+	function getProgressDispatcher()
+	{
+		if (null == progressDispatcher) progressDispatcher = new Dispatcher();
+		return progressDispatcher;
+	}
 
 	function changeState(newstate : PromiseState<TData>)
 	{
@@ -81,8 +89,7 @@ class Promise<TData>
 
 	public function failByName<TError>(name : String, failure : TError -> Void)
 	{
-		ensureErrorDispatcher();
-		errorDispatcher.binder.bind(name, 1, failure);
+		getErrorDispatcher().binder.bind(name, 1, failure);
 		poll();
 		return this;
 	}
@@ -95,8 +102,7 @@ class Promise<TData>
 
 	public function progressByName<TProgress>(name : String, progress : TProgress -> Void)
 	{
-		ensureProgressDispatcher();
-		progressDispatcher.binder.bind(name, 1, progress);
+		getProgressDispatcher().binder.bind(name, 1, progress);
 		poll();
 		return this;
 	}
@@ -128,8 +134,8 @@ class Promise<TData>
 
 enum PromiseState<T> {
 	Idle;
-	Failure(error : Dynamic);
-	Progress(data : Dynamic);
+	Failure(args : Array<Dynamic>);
+	Progress(args : Array<Dynamic>);
 	Success(data : T);
 	ProgressException(error : Dynamic);
 }

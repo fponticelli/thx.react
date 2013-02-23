@@ -7,7 +7,6 @@ class TestAll
 	{
 		runner.addCase(new thx.react.TestBinder());
 		runner.addCase(new thx.react.TestDispatcher());
-//		runner.addCase(new thx.react.TestDispatcher2());
 		runner.addCase(new thx.react.TestDeferred());
 	}
 
