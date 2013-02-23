@@ -3,5 +3,7 @@
 -cp ../thx.core/src
 -lib utest
 -swf bin/thx.react.swf
+-swf-header 800:600:30:ffffff
 -D haxe3
 -main TestAll
+-debug

@@ -30,7 +30,7 @@ class Binder
 			{
 				list = map.get(name);
 				if (null == list) continue;
-				for(handler in list)
+				for (handler in list)
 					Reflect.callMethod(null, handler, payload);
 			}
 		} catch (e : Propagation) { }

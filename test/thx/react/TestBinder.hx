@@ -105,7 +105,7 @@ class TestBinder
 		Assert.equals(111, counter);
 		binder.dispatch("a i", [new A()]);
 		Assert.equals(221, counter);
-		binder.dispatch("x i", [1]);
+		binder.dispatch("x i", [null]);
 		Assert.equals(322, counter);
 	}
 	
