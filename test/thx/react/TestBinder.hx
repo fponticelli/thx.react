@@ -26,30 +26,30 @@ class TestBinder
 	public function testBasics()
 	{
 		var binder = new Binder();
-		binder.on("inc1", increment1);
-		binder.on("inc2", increment2);
-		binder.on("inc2", increment2);
-		binder.trigger("inc1", 1);
+		binder.bind("inc1", 1, increment1);
+		binder.bind("inc2", 1, increment2);
+		binder.bind("inc2", 1, increment2);
+		binder.dispatch("inc1", [1]);
 		Assert.equals(1, counter1);
 		Assert.equals(0, counter2);
-		binder.trigger("inc2", 2);
+		binder.dispatch("inc2", [2]);
 		Assert.equals(1, counter1);
 		Assert.equals(4, counter2);
-		binder.off("inc2", increment2);
-		binder.trigger("inc2", 2);
+		binder.unbind("inc2", 1, increment2);
+		binder.dispatch("inc2", [2]);
 		Assert.equals(1, counter1);
 		Assert.equals(6, counter2);
-		binder.off("inc1");
-		binder.trigger("inc1", 1);
+		binder.unbind("inc1", 1);
+		binder.dispatch("inc1", [1]);
 		Assert.equals(1, counter1);
 	}
 
 	public function testOne()
 	{
 		var binder = new Binder();
-		binder.one("inc1", increment1);
-		binder.trigger("inc1", 1);
-		binder.trigger("inc1", 1);
+		binder.bindOne("inc1", 1, increment1);
+		binder.dispatch("inc1", [1]);
+		binder.dispatch("inc1", [1]);
 		Assert.equals(1, counter1);
 	}
 
@@ -59,53 +59,53 @@ class TestBinder
 		var test_s = null;
 		var test_i = 0;
 		var test_b = false;
-		binder.on("s", function(name : String) { test_s = name; } );
-		binder.on("i", function(i : Int) { test_i = i; } );
-		binder.on("b", function(b : Bool) { test_b = b; } );
+		binder.bind("s", 1, function(name : String) { test_s = name; } );
+		binder.bind("i", 1, function(i : Int) { test_i = i; } );
+		binder.bind("b", 1, function(b : Bool) { test_b = b; } );
 
 		binder.clear("s");
-		binder.trigger("s", "Haxe");
-		binder.trigger("i", 1);
-		binder.trigger("b", true);
+		binder.dispatch("s", ["Haxe"]);
+		binder.dispatch("i", [1]);
+		binder.dispatch("b", [true]);
 		Assert.isNull(test_s);
 		Assert.equals(1, test_i);
 		Assert.isTrue(test_b);
 
 		binder.clear("i");
-		binder.trigger("i", 2);
+		binder.dispatch("i", [2]);
 		Assert.equals(1, test_i);
 		Assert.isTrue(test_b);
 
 		binder.clear();
-		binder.trigger("b", false);
+		binder.dispatch("b", [false]);
 		Assert.isTrue(test_b);
 	}
 
 	public function testTrigger()
 	{
 		var binder = new Binder();
-		binder.on("e", function(test : MyEnum) Assert.same(MyEnum.MyValue, test));
-		binder.trigger("e", MyEnum.MyValue);
+		binder.bind("e", 1, function(test : MyEnum) Assert.same(MyEnum.MyValue, test));
+		binder.dispatch("e", [MyEnum.MyValue]);
 	}
 
 	public function testMulti()
 	{
 		var binder = new Binder(),
 			counter = 0;
-		binder.on("i", function(v : Dynamic) {
+		binder.bind("i", 1, function(v : Dynamic) {
 			counter += 100;
 		});
-		binder.on("a", function(v : A) {
+		binder.bind("a", 1, function(v : A) {
 			counter += 10;
 		});
-		binder.on("x b", function(v : B) {
+		binder.bind("x b", 1, function(v : B) {
 			counter += 1;
 		});
-		binder.trigger("b a i", new B());
+		binder.dispatch("b a i", [new B()]);
 		Assert.equals(111, counter);
-		binder.trigger("a i", new A());
+		binder.dispatch("a i", [new A()]);
 		Assert.equals(221, counter);
-		binder.trigger("x i", 1);
+		binder.dispatch("x i", [1]);
 		Assert.equals(322, counter);
 	}
 	
@@ -130,15 +130,15 @@ class TestBinder
 			f2 = function(i : Int)
 			{
 				counter += i * 2;
-				binder.off("i", f3);
-				binder.off("i", f1);
+				binder.unbind("i", 1, f3);
+				binder.unbind("i", 1, f1);
 			};
-		binder.on("i", f1);
-		binder.on("i", f2);
-		binder.on("i", f3);
-		binder.on("i", f4);
+		binder.bind("i", 1, f1);
+		binder.bind("i", 1, f2);
+		binder.bind("i", 1, f3);
+		binder.bind("i", 1, f4);
 		
-		binder.trigger("i", 1);
+		binder.dispatch("i", [1]);
 		Assert.equals(7, counter);
 	}
 	
@@ -162,16 +162,16 @@ class TestBinder
 		f2 = function(i : Int)
 		{
 			counter += i * 2;
-			binder.off("i", f2);
-			binder.trigger("i", 10);
-			binder.off("i", f1);
+			binder.unbind("i", 1, f2);
+			binder.dispatch("i", [10]);
+			binder.unbind("i", 1, f1);
 		};
-		binder.on("i", f1);
-		binder.on("i", f2);
-		binder.on("i", f3);
-		binder.on("i", f4);
+		binder.bind("i", 1, f1);
+		binder.bind("i", 1, f2);
+		binder.bind("i", 1, f3);
+		binder.bind("i", 1, f4);
 		
-		binder.trigger("i", 1);
+		binder.dispatch("i", [1]);
 		Assert.equals(90, counter);
 	}
 }

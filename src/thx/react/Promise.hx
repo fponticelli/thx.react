@@ -40,13 +40,13 @@ class Promise<TData>
 			case Failure(error):
 				if (null != errorDispatcher)
 				{
-					errorDispatcher.dispatchValue(error);
+					errorDispatcher.triggerDynamic(error);
 					errorDispatcher = null;
 				}
 			case Progress(data):
 				if (null != progressDispatcher)
 				{
-					progressDispatcher.dispatchValue(data);
+					progressDispatcher.triggerDynamic(data);
 				}
 			case Idle:
 			case ProgressException(_):
@@ -82,7 +82,7 @@ class Promise<TData>
 	public function failByName<TError>(name : String, failure : TError -> Void)
 	{
 		ensureErrorDispatcher();
-		errorDispatcher.bind(name, failure);
+		errorDispatcher.binder.bind(name, 1, failure);
 		poll();
 		return this;
 	}
@@ -96,7 +96,7 @@ class Promise<TData>
 	public function progressByName<TProgress>(name : String, progress : TProgress -> Void)
 	{
 		ensureProgressDispatcher();
-		progressDispatcher.bind(name, progress);
+		progressDispatcher.binder.bind(name, 1, progress);
 		poll();
 		return this;
 	}

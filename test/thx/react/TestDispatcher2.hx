@@ -12,6 +12,7 @@ import thx.react.TestDispatcher;
 @:access(Dispatcher2)
 class TestDispatcher2
 {
+	/*
 	public function new() {}
 
 	public var counter1 : Int = 0;
@@ -151,4 +152,5 @@ class TestDispatcher2
 		dispatcher.trigger(1, "Haxe");
 		Assert.equals(321, counter);
 	}
+	*/
 }

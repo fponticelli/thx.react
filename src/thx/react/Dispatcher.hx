@@ -16,9 +16,13 @@ using thx.macro.MacroTypes;
 
 using thx.core.Types;
 import thx.react.ds.FunctionList;
+import thx.react.Binder;
 
 class Dispatcher
 {
+	inline static var KEY_SEPARATOR : String = ";";
+	inline static var EVENT_SEPARATOR : String = " ";
+
 	#if macro
 	public static function nonOptionalArgumentTypeAsString(fexpr : Expr, index : Int)
 	{
@@ -27,105 +31,137 @@ class Dispatcher
 			throw "handler argument cannot be optional";
 		return TypeTools.toString(t.typeOfArgument(index));
 	}
+	
+	public static function argumentTypes(handler : Expr, length : Int)
+	{
+		return [for(i in 0...length) i].map(nonOptionalArgumentTypeAsString.bind(handler, _)).join(KEY_SEPARATOR);
+	}
+	
+	public static function getArity(handler : Expr)
+	{
+		var arity = Context.typeof(handler).getArity();
+		if (arity < 0)
+			throw "handler is not a function";
+		return arity;
+	}
+	
+	public static function combinedTypeInheritance(values : Array<Expr>)
+	{
+		var alltypes = [];
+		for (value in values)
+		{
+			var type = Context.typeof(value),
+				types = type.typeInheritance();
+			if(types[types.length-1] != "Dynamic")
+				types.push("Dynamic");
+			alltypes.push(types);
+		}
+		return thx.core.Arrays.crossMulti(alltypes).map(function(a) return a.join(KEY_SEPARATOR)).join(EVENT_SEPARATOR);
+	}
 	#end
-
-	var map : Map<String, FunctionList>;
+	
+	public var binder(default, null) : Binder;
+	
 	public function new()
+		binder = new Binder();
+	
+	macro public function on(ethis : ExprOf<Dispatcher>, handler : Expr)
 	{
-		map = new Map();
+		var arity = getArity(handler),
+			types = argumentTypes(handler, arity);
+		return macro $ethis.binder.bind($v{types}, $v{arity}, $handler);
 	}
 
-	macro public function on<T>(ethis : ExprOf<Dispatcher>, handler : ExprOf<T -> Void>)
+	macro public function one<T>(ethis : ExprOf<Dispatcher>, handler : Expr)
 	{
-		var type = Dispatcher.nonOptionalArgumentTypeAsString(handler, 0);
-		return macro $ethis.bind($v{type}, $handler);
+		var arity = getArity(handler),
+			types = argumentTypes(handler, arity);
+		return macro $ethis.binder.bindOne($v{types}, $v{arity}, $handler);
 	}
 
-	macro public function one<T>(ethis : ExprOf<Dispatcher>, handler : ExprOf<T -> Void>)
+	macro public function off<T>(ethis : ExprOf<Dispatcher>, handler : Expr)
 	{
-		var type = Dispatcher.nonOptionalArgumentTypeAsString(handler, 0);
-		return macro $ethis.bindOne($v{type}, $handler);
+		var arity = getArity(handler),
+			types = argumentTypes(handler, arity);
+		return macro $ethis.binder.unbind($v{types}, $v{arity}, $handler);
 	}
 
-	macro public function off<T>(ethis : ExprOf<Dispatcher>, handler : ExprOf<T -> Void>)
+	macro public function trigger<T>(ethis : ExprOf<Dispatcher>, values : Array<Expr>)
 	{
-		var type = Dispatcher.nonOptionalArgumentTypeAsString(handler, 0);
-		return macro $ethis.unbind($v{type}, $handler);
+		var types = combinedTypeInheritance(values);
+		return macro $ethis.binder.dispatch($v{types}, $a{values});
 	}
 
-	public function clearName(name : String)
+	public function clear(?type : Class<Dynamic>, ?name : String)
 	{
-		map.remove(name);
+		if (null != type)
+			binder.clear(Type.getClassName(type));
+		else if (null != name)
+			binder.clear(name);
+		else
+			binder.clear();
 	}
 
-	public function clearType(type : Class<Dynamic>)
-	{
-		clearName(Type.getClassName(type));
-	}
-
-	public function clear()
-	{
-		map = new Map();
-	}
-
-	macro public function trigger<T>(ethis : ExprOf<Dispatcher>, value : ExprOf<T>)
-	{
-		var type  = Context.typeof(value),
-			types = type.typeInheritance();
-		if(types[types.length-1] != "Dynamic")
-			types.push("Dynamic");
-		return macro $ethis.dispatch($v{types}, $value);
-	}
-
-	public function dispatchValue<T>(payload : T)
+	public function triggerDynamic(payloads : Array<Dynamic>)
 	{
 		var names = [Type.typeof(payload).toString()];
 		if(names[names.length-1] != "Dynamic")
 			names.push("Dynamic");
-		dispatch(names, payload);
+		binder.dispatch(names.join(Binder.KEY_SEPARATOR), [payload]);
+	}
+}
+/*
+// needs to implement DispatcherMulti
+class Dispatcher2
+{
+	public var binder(default, null) : Binder;
+	
+	public function new()
+		binder = new Binder();
+	
+	macro public function on<T1, T2>(ethis : ExprOf<Dispatcher>, handler : ExprOf<T1 -> T2 -> Void>)
+	{
+		var names = [for(i in 0...2) Dispatcher.nonOptionalArgumentTypeAsString(handler, i)].join(Binder.KEY_SEPARATOR);
+		return macro $ethis.binder.on($v{names}, $handler);
 	}
 
-	public function dispatch<T>(names : Array<String>, payload : T)
+	macro public function one<T1, T2>(ethis : ExprOf<Dispatcher>, handler : ExprOf<T1 -> T2 -> Void>)
 	{
-		var i, binds;
-		try
-		{
-			for (name in names)
-			{
-				binds = map.get(""+name); // TODO this seems a bug in Neko
-				if (null == binds) continue;
-				for(handler in binds)
-					handler(payload);
-			}
-		} catch (e : Propagation) { }
+		var names = [for(i in 0...2) Dispatcher.nonOptionalArgumentTypeAsString(handler, i)].join(Binder.KEY_SEPARATOR);
+		return macro $ethis.binder.one($v{names}, $handler);
 	}
 
-	public function bind<T>(name : String, handler : T -> Void)
+	macro public function off<T1, T2>(ethis : ExprOf<Dispatcher>, handler : ExprOf<T1 -> T2 -> Void>)
 	{
-		var binds = map.get(name);
-		if (null == binds)
-			map.set(name, binds = new FunctionList());
-		binds.add(handler);
+		var names = [for(i in 0...2) Dispatcher.nonOptionalArgumentTypeAsString(handler, i)].join(Binder.KEY_SEPARATOR);
+		return macro $ethis.binder.off($v{names}, $handler);
 	}
 
-	public function bindOne<T>(name : String, handler : T -> Void)
+	public function clear(?types : Class<Dynamic>, ?name : String)
 	{
-		function h(v : T) {
-			unbind(name, h);
-			handler(v);
-		}
-		bind(name, h);
+		if (null != types)
+			binder.clear([for(i in 0...2) Type.getClassName(types[i])].join(Binder.KEY_SEPARATOR));
+		else if (null != name)
+			binder.clear(name);
+		else
+			binder.clear();
 	}
 
-	public function unbind<T>(name : String, ?handler : T -> Void)
+	macro public function trigger<T1, T2>(ethis : ExprOf<Dispatcher>, value1 : ExprOf<T1>, value2 : ExprOf<T2>)
 	{
-		if (null == handler)
-			map.remove(name);
-		else {
-			var binds = map.get(name);
-			if (null == binds) return;
-			binds.remove(handler);
-		}
+		var types = Context.typeof(value).typeInheritance();
+		if(types[types.length-1] != "Dynamic")
+			types.push("Dynamic");
+		var names = types.join(Binder.KEY_SEPARATOR);
+		return macro $ethis.binder.trigger($v{names}, $value);
+	}
+
+	public function triggerDynamic(payload1 : Dynamic, payload2 : Dynamic)
+	{
+		var names = [Type.typeof(payload).toString()];
+		if(names[names.length-1] != "Dynamic")
+			names.push("Dynamic");
+		binder.trigger(names.join(Binder.KEY_SEPARATOR), payload);
 	}
 }
 
@@ -225,7 +261,7 @@ private class DispatcherMulti
 	}
 }
 
-class Dispatcher2 extends DispatcherMulti
+class Dispatcher2b extends DispatcherMulti
 {
 	
 	macro public function on<T1, T2>(ethis : ExprOf<Dispatcher2>, handler : ExprOf<T1 -> T2 -> Void>)
@@ -496,3 +532,4 @@ class Dispatcher5 extends DispatcherMulti
 		clearTypeArray([type1, type2, type3, type4, type5]);
 	}
 }
+*/

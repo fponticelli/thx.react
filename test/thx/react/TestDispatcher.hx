@@ -31,51 +31,6 @@ class TestDispatcher
 		counter2 += i;
 	}
 
-	public function testBasics()
-	{
-		var dispatcher = new Dispatcher();
-		dispatcher.bind("inc1", increment1);
-		dispatcher.bind("inc2", increment2);
-		dispatcher.bind("inc2", increment2);
-		dispatcher.dispatch(["inc1"], 1);
-		Assert.equals(1, counter1);
-		Assert.equals(0, counter2);
-		dispatcher.dispatch(["inc2"], 2);
-		Assert.equals(1, counter1);
-		Assert.equals(4, counter2);
-		dispatcher.unbind("inc2", increment2);
-		dispatcher.dispatch(["inc2"], 2);
-		Assert.equals(1, counter1);
-		Assert.equals(6, counter2);
-		dispatcher.unbind("inc1");
-		dispatcher.dispatch(["inc1"], 1);
-		Assert.equals(1, counter1);
-	}
-
-	public function testBindOne()
-	{
-		var dispatcher = new Dispatcher();
-		dispatcher.bindOne("inc1", increment1);
-		dispatcher.dispatch(["inc1"], 1);
-		dispatcher.dispatch(["inc1"], 1);
-		Assert.equals(1, counter1);
-	}
-
-	public function testDynamic()
-	{
-		var dispatcher = new Dispatcher();
-		var tdynamic = 0,
-			ttyped   = 0;
-		dispatcher.bind("Dynamic", function(_) tdynamic++);
-		dispatcher.bind("Int", function(_) ttyped++);
-		dispatcher.dispatch(["Int", "Dynamic"], 0);
-		Assert.equals(1, tdynamic);
-		Assert.equals(1, ttyped);
-		dispatcher.dispatch(["Dynamic"], 0);
-		Assert.equals(2, tdynamic);
-		Assert.equals(1, ttyped);
-	}
-
 	public function testOn()
 	{
 		var dispatcher = new Dispatcher();
@@ -101,7 +56,7 @@ class TestDispatcher
 		dispatcher.on(function(i : Int) { test_i = i; } );
 		dispatcher.on(function(b : Bool) { test_b = b; } );
 
-		dispatcher.clearType(String);
+		dispatcher.clear(String);
 		dispatcher.trigger("Haxe");
 		dispatcher.trigger(1);
 		dispatcher.trigger(true);
@@ -109,7 +64,7 @@ class TestDispatcher
 		Assert.equals(1, test_i);
 		Assert.isTrue(test_b);
 
-		dispatcher.clearName("Int");
+		dispatcher.clear("Int");
 		dispatcher.trigger(2);
 		Assert.equals(1, test_i);
 		Assert.isTrue(test_b);
@@ -123,7 +78,7 @@ class TestDispatcher
 	{
 		var dispatcher = new Dispatcher();
 		dispatcher.on(function(test : MyEnum) Assert.same(MyEnum.MyValue, test));
-		dispatcher.dispatchValue(MyEnum.MyValue);
+		dispatcher.triggerDynamic(MyEnum.MyValue);
 	}
 
 	public function testHierarchy()
