@@ -32,7 +32,7 @@ class TestDeferred
 
 	public function testFailure()
 	{
-		new Deferred()
+		var d = new Deferred()
 			.then(function(_) Assert.fail("success should never occur"))
 			.fail(function(e : Int) Assert.fail("this Int error should never occur"))
 			.fail(function(e : String) Assert.equals("error", e))

@@ -8,6 +8,7 @@ class TestAll
 		runner.addCase(new thx.react.TestBinder());
 		runner.addCase(new thx.react.TestDispatcher());
 		runner.addCase(new thx.react.TestDeferred());
+		runner.addCase(new thx.react.TestDeferred2());
 	}
 
 	public static function main()

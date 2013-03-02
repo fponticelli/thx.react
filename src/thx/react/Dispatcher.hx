@@ -81,21 +81,21 @@ class Dispatcher
 	{
 		var arity = getArity(handler),
 			types = argumentTypes(handler, arity);
-		return macro $ethis.binder.bind($v{types}, $v{arity}, $handler);
+		return macro $ethis.binder.bind($v{types}, new thx.core.Procedure($handler, $v{arity}));
 	}
 
 	macro public function one<T>(ethis : ExprOf<Dispatcher>, handler : Expr)
 	{
 		var arity = getArity(handler),
 			types = argumentTypes(handler, arity);
-		return macro $ethis.binder.bindOne($v{types}, $v{arity}, $handler);
+		return macro $ethis.binder.bindOne($v{types}, new thx.core.Procedure($handler, $v{arity}));
 	}
 
 	macro public function off<T>(ethis : ExprOf<Dispatcher>, handler : Expr)
 	{
 		var arity = getArity(handler),
 			types = argumentTypes(handler, arity);
-		return macro $ethis.binder.unbind($v{types}, $v{arity}, $handler);
+		return macro $ethis.binder.unbind($v{types}, new thx.core.Procedure($handler, $v{arity}));
 	}
 
 	macro public function trigger<T>(ethis : ExprOf<Dispatcher>, values : Array<Expr>)

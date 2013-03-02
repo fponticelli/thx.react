@@ -1,26 +1,28 @@
 package thx.react.ds;
 
-class FunctionList
+import thx.core.Procedure;
+
+class ProcedureList<T>
 {
 
 	var iterators : Map<Int, Int>;
 	static var iterator_id : Int = 0;
 
-	var a : Array<Dynamic>;
+	var a : Array<Procedure<T>>;
 	public function new()
 	{
 		a = [];
 		iterators = new Map();
 	}
 
-	public function add( item : Dynamic ) {
+	public function add( item : Procedure<T> ) {
 		a.push(item);
 	}
 
-	public function remove( v : Dynamic ) : Bool {
+	public function remove( v : Procedure<T>) : Bool {
 		for(i in 0...a.length)
 		{
-			if(Reflect.compareMethods(a[i], v)) {
+			if(a[i].equal(v)) {
 				updateIterators(i);
 				a.splice(i, 1);
 				return true;
@@ -42,7 +44,7 @@ class FunctionList
 		}
 	}
 
-	public function iterator() : Iterator<Dynamic> {
+	public function iterator() : Iterator<Procedure<T>> {
 		var key = ++iterator_id;
 		iterators.set(key, 0);
 		return {

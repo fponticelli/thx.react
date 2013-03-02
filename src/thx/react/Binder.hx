@@ -1,29 +1,21 @@
 package thx.react;
 
-import thx.react.ds.FunctionList;
+import thx.core.Procedure;
+import thx.react.ds.ProcedureList;
 
 class Binder
 {
 	public inline static var KEY_SEPARATOR : String = " ";
-	var binds : Array<Map<String, FunctionList>>;
+	var map : Map<String, ProcedureList<Dynamic>>;
 	public function new()
 	{
-		binds = [];
-	}
-	
-	function getMap(arity : Int)
-	{
-		if (null == binds[arity])
-			binds[arity] = new Map();
-		return binds[arity];
+		map = new Map();
 	}
 	
 	public function dispatch(names : String, payload: Array<Dynamic>)
 	{
 		var list = null,
-			map = binds[payload.length];
-		if (null == map)
-			return;
+			len  = payload.length;
 		try
 		{
 			for (name in names.split(KEY_SEPARATOR))
@@ -31,43 +23,43 @@ class Binder
 				list = map.get(name);
 				if (null == list) continue;
 				for (handler in list)
-					Reflect.callMethod(null, handler, payload);
+					if (len == handler.getArity())
+						handler.apply(payload);
 			}
 		} catch (e : Propagation) { }
 	}
 	
-	public function bind(names : String, arity : Int, handler : Dynamic)
+	public function bind<T>(names : String, handler : Procedure<T>)
 	{
-		var map = getMap(arity);
 		for (name in names.split(KEY_SEPARATOR)) 
 		{
 			var binds = map.get(name);
 			if (null == binds)
-				map.set(name, binds = new FunctionList());
+				map.set(name, binds = new ProcedureList());
 			binds.add(handler);
 		}
 	}
 	
-	public function bindOne(names : String, arity : Int, handler : Dynamic)
+	public function bindOne<T>(names : String, handler : Procedure<T>)
 	{
-		var f = null;
-		f = Reflect.makeVarArgs(function(args : Array<Dynamic>) {
-			unbind(names, arity, f);
-			Reflect.callMethod(null, handler, args);
-		});
-		bind(names, arity, f);
+		var p : Procedure<T> = null;
+		p = new Procedure(Reflect.makeVarArgs(function(args : Array<Dynamic>) {
+			unbind(names, p);
+			handler.apply(args);
+		}), handler.getArity());
+		bind(names, p);
 	}
 	
-	public function unbind(names : String, arity : Int, ?handler : Dynamic)
+	public function unbind<T>(names : String, ?handler : Procedure<T>)
 	{
-		var map = getMap(arity);
 		for (name in names.split(KEY_SEPARATOR)) 
 		{
 			if (null == handler)
 				map.remove(name);
 			else {
 				var binds = map.get(name);
-				if (null == binds) return;
+				if (null == binds)
+					continue;
 				binds.remove(handler);
 			}
 		}
@@ -76,16 +68,8 @@ class Binder
 	public function clear(?names : String)
 	{
 		if(null == names)
-			binds = [];
-		else {
-			for (i in 0...binds.length)
-			{
-				var map = binds[i];
-				if (null == map)
-					continue;
-				for(name in names.split(KEY_SEPARATOR))
-					map.remove(name);
-			}
-		}
+			map = new Map();
+		else for(name in names.split(KEY_SEPARATOR))
+			map.remove(name);
 	}
 }

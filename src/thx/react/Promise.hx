@@ -5,16 +5,13 @@
 
 package thx.react;
 
-@:access(thx.react.Dispatcher)
-class Promise<TData>
-{
-	public inline static function value<T>(v : T)
-	{
-		return new Deferred().resolve(v);
-	}
+import thx.core.Procedure;
+import thx.react.Deferred;
 
-	var queue : Array<TData -> Void>;
-	var state : PromiseState<TData>;
+class BasePromise
+{
+	var queue : Array<Dynamic>;
+	var state : PromiseState2;
 	var errorDispatcher : Dispatcher;
 	var progressDispatcher : Dispatcher;
 	public function new()
@@ -23,16 +20,28 @@ class Promise<TData>
 		state = Idle;
 	}
 
+	macro public function fail<TError>(ethis : haxe.macro.Expr.ExprOf<BasePromise>, handler : haxe.macro.Expr.ExprOf<TError -> Void>)
+	{
+		var type = Dispatcher.nonOptionalArgumentTypeAsString(handler, 0);
+		return macro $ethis.failByName($v{type}, $handler);
+	}
+
+	macro public function progress<TProgress>(ethis : haxe.macro.Expr.ExprOf<BasePromise>, handler : haxe.macro.Expr.ExprOf<TProgress -> Void>)
+	{
+		var type = Dispatcher.nonOptionalArgumentTypeAsString(handler, 0);
+		return macro $ethis.progressByName($v{type}, $handler);
+	}
+	
 	function poll()
 	{
 		switch(state)
 		{
-			case Success(data):
+			case Success(args):
 				var handler;
 				try
 				{
 					while (null != (handler = queue.shift()))
-						handler(data);
+						Reflect.callMethod(null, handler, args);
 				} catch (e : Dynamic) {
 					changeState(ProgressException([e]));
 					poll();
@@ -54,18 +63,7 @@ class Promise<TData>
 		}
 	}
 
-	function getErrorDispatcher()
-	{
-		if (null == errorDispatcher) errorDispatcher = new Dispatcher();
-		return errorDispatcher;
-	}
-	function getProgressDispatcher()
-	{
-		if (null == progressDispatcher) progressDispatcher = new Dispatcher();
-		return progressDispatcher;
-	}
-
-	function changeState(newstate : PromiseState<TData>)
+	function changeState(newstate : PromiseState2)
 	{
 		switch[state, newstate]
 		{
@@ -80,56 +78,120 @@ class Promise<TData>
 		}
 		poll();
 	}
-
-	macro public function fail<TError>(ethis : haxe.macro.Expr.ExprOf<Promise<Dynamic>>, handler : haxe.macro.Expr.ExprOf<TError -> Void>)
+	
+	function getErrorDispatcher()
 	{
-		var type = Dispatcher.nonOptionalArgumentTypeAsString(handler, 0);
-		return macro $ethis.failByName($v{type}, $handler);
+		if (null == errorDispatcher) errorDispatcher = new Dispatcher();
+		return errorDispatcher;
+	}
+	function getProgressDispatcher()
+	{
+		if (null == progressDispatcher) progressDispatcher = new Dispatcher();
+		return progressDispatcher;
 	}
 
-	public function failByName<TError>(name : String, failure : TError -> Void)
+	public function failByName<T>(name : String, failure : Procedure<T>)
 	{
-		getErrorDispatcher().binder.bind(name, 1, failure);
+		getErrorDispatcher().binder.bind(name, failure);
 		poll();
 		return this;
 	}
 
-	macro public function progress<TProgress>(ethis : haxe.macro.Expr.ExprOf<Promise<Dynamic>>, handler : haxe.macro.Expr.ExprOf<TProgress -> Void>)
+	public function progressByName<T>(name : String, progress : Procedure<T>)
 	{
-		var type = Dispatcher.nonOptionalArgumentTypeAsString(handler, 0);
-		return macro $ethis.progressByName($v{type}, $handler);
-	}
-
-	public function progressByName<TProgress>(name : String, progress : TProgress -> Void)
-	{
-		getProgressDispatcher().binder.bind(name, 1, progress);
+		getProgressDispatcher().binder.bind(name, progress);
 		poll();
 		return this;
 	}
-
-	public function then(success : TData -> Void, ?failure : Dynamic -> Void)
+	
+	function thenImpl(success : Dynamic, ?failure : Dynamic -> Void)
 	{
 		queue.push(success);
 		if (null != failure)
-		{
 			failByName("Dynamic", failure);
-		} else {
+		else
 			poll();
-		}
+	}
+}
+
+class Promise<T1> extends BasePromise
+{
+	public inline static function value<T>(v : T)
+	{
+		return new Deferred<T>().resolve(v);
+	}
+	
+	public function then(success : T1 -> Void, ?failure : Dynamic -> Void)
+	{
+		thenImpl(success, failure);
+		return this;
+	}
+	
+	override function failByName<T>(name : String, failure : Procedure<T>) : Promise<T1>
+	{
+		super.failByName(name, failure);
 		return this;
 	}
 
-	public function pipe<TNew>(success : TData -> Promise<TNew>) : Promise<TNew>
+	override function progressByName<T>(name : String, progress : Procedure<T>) : Promise<T1>
 	{
-		var deferred = new Deferred();
-		this.then(function(data : TData) {
-				var promise = success(data);
-				promise.then(deferred.resolve);
+		super.progressByName(name, progress);
+		return this;
+	}
+
+	public function pipe<TNew>(success : T1 -> Promise<TNew>) : Promise<TNew>
+	{
+		var deferred = new Deferred<TNew>();
+		this.then(function(data : T1) {
+				success(data)
+					.then(deferred.resolve);
 			})
 			.failByName("Dynamic", deferred.reject)
 			.progressByName("Dynamic", deferred.notify);
 		return deferred.promise();
 	}
+}
+
+class Promise2<T1, T2> extends BasePromise
+{
+	public function then(success : T1 -> T2 -> Void, ?failure : Dynamic -> Void)
+	{
+		thenImpl(success, failure);
+		return this;
+	}
+	
+	override function failByName<T>(name : String, failure : Procedure<T>) : Promise2<T1, T2>
+	{
+		super.failByName(name, failure);
+		return this;
+	}
+
+	override function progressByName<T>(name : String, progress : Procedure<T>) : Promise2<T1, T2>
+	{
+		super.progressByName(name, progress);
+		return this;
+	}
+/*
+	public function pipe<TNew>(success : T1 -> T2 -> Promise<TNew>) : Promise<TNew>
+	{
+		var deferred = new Deferred<TData>();
+		this.then(function(data : TData) {
+				success(data)
+					.then(deferred.resolve);
+			})
+			.failByName("Dynamic", 1, deferred.reject)
+			.progressByName("Dynamic", 1, deferred.notify);
+		return deferred.promise();
+	}
+*/
+}
+
+enum PromiseState2 {
+	Idle;
+	Failure (args : Array<Dynamic>);
+	Progress(args : Array<Dynamic>);
+	Success (args : Array<Dynamic>);
+	ProgressException(error : Dynamic);
 }
 
 enum PromiseState<T> {
