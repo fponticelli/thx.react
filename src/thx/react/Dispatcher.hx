@@ -15,7 +15,6 @@ using thx.macro.MacroTypes;
 #end
 
 using thx.core.Types;
-import thx.react.ds.FunctionList;
 import thx.react.Binder;
 
 class Dispatcher

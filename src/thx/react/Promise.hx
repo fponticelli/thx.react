@@ -11,7 +11,7 @@ import thx.react.Deferred;
 class BasePromise
 {
 	var queue : Array<Dynamic>;
-	var state : PromiseState2;
+	var state : PromiseState;
 	var errorDispatcher : Dispatcher;
 	var progressDispatcher : Dispatcher;
 	public function new()
@@ -63,7 +63,7 @@ class BasePromise
 		}
 	}
 
-	function changeState(newstate : PromiseState2)
+	function changeState(newstate : PromiseState)
 	{
 		switch[state, newstate]
 		{
@@ -186,18 +186,10 @@ class Promise2<T1, T2> extends BasePromise
 */
 }
 
-enum PromiseState2 {
+enum PromiseState {
 	Idle;
 	Failure (args : Array<Dynamic>);
 	Progress(args : Array<Dynamic>);
 	Success (args : Array<Dynamic>);
-	ProgressException(error : Dynamic);
-}
-
-enum PromiseState<T> {
-	Idle;
-	Failure(args : Array<Dynamic>);
-	Progress(args : Array<Dynamic>);
-	Success(data : T);
 	ProgressException(error : Dynamic);
 }
