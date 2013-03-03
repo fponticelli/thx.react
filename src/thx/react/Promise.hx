@@ -5,46 +5,67 @@
 
 package thx.react;
 
-import thx.core.Procedure;
-import thx.react.Deferred;
+#if macro
+import haxe.macro.Expr;
+#end
 
-class BasePromise
+import thx.core.Procedure;
+
+class Promise<T>
 {
-	var queue : Array<Dynamic>;
+	public inline static function value<T>(v : T) : Promise<T -> Void>
+		return new Deferred().resolve(v);
+
+	var handlers : Array<ProcedureDef<T>>;
 	var state : PromiseState;
 	var errorDispatcher : Dispatcher;
 	var progressDispatcher : Dispatcher;
-	public function new()
+	function new()
 	{
-		queue = [];
-		state = Idle;
-	}
-
-	macro public function fail<TError>(ethis : haxe.macro.Expr.ExprOf<BasePromise>, handler : haxe.macro.Expr.ExprOf<TError -> Void>)
-	{
-		var type = Dispatcher.nonOptionalArgumentTypeAsString(handler, 0);
-		return macro $ethis.failByName($v{type}, $handler);
-	}
-
-	macro public function progress<TProgress>(ethis : haxe.macro.Expr.ExprOf<BasePromise>, handler : haxe.macro.Expr.ExprOf<TProgress -> Void>)
-	{
-		var type = Dispatcher.nonOptionalArgumentTypeAsString(handler, 0);
-		return macro $ethis.progressByName($v{type}, $handler);
+		this.state = Idle;
+		this.handlers = [];
 	}
 	
-	function poll()
+	public function then(success : ProcedureDef<T>, ?failure : Dynamic -> Void)
+	{
+		handlers.push(success);
+		if (null != failure)
+			getErrorDispatcher().binder.bind("Dynamic", failure);
+		update();
+		return this;
+	}
+
+	function setState(newstate : PromiseState)
+	{
+		switch[state, newstate]
+		{
+			case [Idle, _]:
+				state = newstate;
+			case [Progress(_), Progress(_)]:
+				state = newstate;
+			case [Success(_), ProgressException(e)]:
+				state = Failure(e);
+			case [_, _]:
+				throw "promise was already resolved/rejected, can't apply new state $newstate";
+		}
+		update();
+		return this;
+	}
+	
+	function update()
 	{
 		switch(state)
 		{
+			case Idle:
 			case Success(args):
 				var handler;
 				try
 				{
-					while (null != (handler = queue.shift()))
-						Reflect.callMethod(null, handler, args);
+					while (null != (handler = handlers.shift()))
+						handler.apply(args);
 				} catch (e : Dynamic) {
-					changeState(ProgressException([e]));
-					poll();
+					setState(ProgressException([e]));
+					update();
 				}
 			case Failure(args):
 				if (null != errorDispatcher)
@@ -57,26 +78,10 @@ class BasePromise
 				{
 					progressDispatcher.triggerDynamic(args);
 				}
-			case Idle:
 			case ProgressException(_):
 				throw "ProgressException state should never be in the poll";
 		}
-	}
-
-	function changeState(newstate : PromiseState)
-	{
-		switch[state, newstate]
-		{
-			case [Idle, _]:
-				state = newstate;
-			case [Progress(_), Progress(_)]:
-				state = newstate;
-			case [Success(_), ProgressException(e)]:
-				state = Failure(e);
-			case [_, _]:
-				throw "promise was already resolved/failed, can't apply new state $newstate";
-		}
-		poll();
+		return this;
 	}
 	
 	function getErrorDispatcher()
@@ -84,106 +89,43 @@ class BasePromise
 		if (null == errorDispatcher) errorDispatcher = new Dispatcher();
 		return errorDispatcher;
 	}
+	
 	function getProgressDispatcher()
 	{
 		if (null == progressDispatcher) progressDispatcher = new Dispatcher();
 		return progressDispatcher;
 	}
-
-	public function failByName<T>(name : String, failure : Procedure<T>)
+	
+	@:noCompletion @:noDoc
+	public function fail_impl(names : String, handler : Dynamic)
 	{
-		getErrorDispatcher().binder.bind(name, failure);
-		poll();
-		return this;
-	}
-
-	public function progressByName<T>(name : String, progress : Procedure<T>)
-	{
-		getProgressDispatcher().binder.bind(name, progress);
-		poll();
-		return this;
+		getErrorDispatcher().binder.bind(names, handler);
+		return update();
 	}
 	
-	function thenImpl(success : Dynamic, ?failure : Dynamic -> Void)
+	@:noCompletion @:noDoc
+	public function progress_impl(names : String, handler : Dynamic)
 	{
-		queue.push(success);
-		if (null != failure)
-			failByName("Dynamic", failure);
-		else
-			poll();
-	}
-}
-
-class Promise<T1> extends BasePromise
-{
-	public inline static function value<T>(v : T)
-	{
-		return new Deferred<T>().resolve(v);
+		getProgressDispatcher().binder.bind(names, handler);
+		return update();
 	}
 	
-	public function then(success : T1 -> Void, ?failure : Dynamic -> Void)
+	macro public function fail<TPromise>(ethis : ExprOf<Promise<TPromise>>, handler : Expr) : ExprOf<Promise<TPromise>>
 	{
-		thenImpl(success, failure);
-		return this;
+		var arity = Dispatcher.getArity(handler),
+			types = Dispatcher.argumentTypes(handler, arity);
+		return macro $ethis.fail_impl($v{types}, new thx.core.Procedure($handler, $v{arity}));
 	}
 	
-	override function failByName<T>(name : String, failure : Procedure<T>) : Promise<T1>
+	macro public function progress<TPromise>(ethis : ExprOf<Promise<TPromise>>, handler : Expr)
 	{
-		super.failByName(name, failure);
-		return this;
-	}
-
-	override function progressByName<T>(name : String, progress : Procedure<T>) : Promise<T1>
-	{
-		super.progressByName(name, progress);
-		return this;
-	}
-
-	public function pipe<TNew>(success : T1 -> Promise<TNew>) : Promise<TNew>
-	{
-		var deferred = new Deferred<TNew>();
-		this.then(function(data : T1) {
-				success(data)
-					.then(deferred.resolve);
-			})
-			.failByName("Dynamic", deferred.reject)
-			.progressByName("Dynamic", deferred.notify);
-		return deferred.promise();
-	}
-}
-
-class Promise2<T1, T2> extends BasePromise
-{
-	public function then(success : T1 -> T2 -> Void, ?failure : Dynamic -> Void)
-	{
-		thenImpl(success, failure);
-		return this;
+		var arity = Dispatcher.getArity(handler),
+			types = Dispatcher.argumentTypes(handler, arity);
+		return macro $ethis.progress_impl($v{types}, new thx.core.Procedure($handler, $v{arity}));
 	}
 	
-	override function failByName<T>(name : String, failure : Procedure<T>) : Promise2<T1, T2>
-	{
-		super.failByName(name, failure);
-		return this;
-	}
-
-	override function progressByName<T>(name : String, progress : Procedure<T>) : Promise2<T1, T2>
-	{
-		super.progressByName(name, progress);
-		return this;
-	}
-/*
-	public function pipe<TNew>(success : T1 -> T2 -> Promise<TNew>) : Promise<TNew>
-	{
-		var deferred = new Deferred<TData>();
-		this.then(function(data : TData) {
-				success(data)
-					.then(deferred.resolve);
-			})
-			.failByName("Dynamic", 1, deferred.reject)
-			.progressByName("Dynamic", 1, deferred.notify);
-		return deferred.promise();
-	}
-*/
+	//await
+	public function toString() return 'Promise (handlers: ${handlers.length}, state : $state)';
 }
 
 enum PromiseState {
@@ -192,4 +134,115 @@ enum PromiseState {
 	Progress(args : Array<Dynamic>);
 	Success (args : Array<Dynamic>);
 	ProgressException(error : Dynamic);
+}
+
+@:access(thx.react.Promise)
+class BaseDeferred<TPromise>
+{
+	public var promise(default, null) : Promise<TPromise>;
+	public function reject<TError>(error : TError)
+		return promise.setState(Failure([error]));
+
+	public function notify<TProgress>(data : TProgress)
+	{
+		promise.setState(Progress([data]));
+		return this;
+	}
+	
+	public function toString() return '${Type.getClassName(Type.getClass(this)).split(".").pop()} with $promise';
+}
+
+@:access(thx.react.Promise)
+class Deferred<T1> extends BaseDeferred<T1 -> Void>
+{
+	public static function pipe<T1, TNew>(promise : Promise<T1 -> Void>, success : T1 -> Promise<TNew>) : Promise<TNew>
+	{
+		var deferred = new Deferred();
+		promise.then(function(v : T1) {
+			success(v).then(cast deferred.resolve);
+		});
+		return cast deferred.promise;
+	}
+	
+	public function new()
+		promise = new Promise<T1 -> Void>();
+		
+	public function resolve(v1 : T1)
+		return promise.setState(Success([v1]));
+}
+
+@:access(thx.react.Promise)
+class Deferred2<T1, T2> extends BaseDeferred<T1 -> T2 -> Void>
+{
+	public static function pipe<T1, T2, TNew>(promise : Promise<T1 -> T2 -> Void>, success : T1 -> T2 -> Promise<TNew>) : Promise<TNew>
+	{
+		var deferred = new Deferred2();
+		promise.then(function(v1 : T1, v2 : T2) {
+			success(v1, v2).then(cast deferred.resolve);
+		});
+		return cast deferred.promise;
+	}
+	
+	public function new()
+		promise = new Promise<T1 -> T2 -> Void>();
+		
+	public function resolve(v1 : T1, v2 : T2)
+		return promise.setState(Success([v1, v2]));
+}
+
+@:access(thx.react.Promise)
+class Deferred3<T1, T2, T3> extends BaseDeferred<T1 -> T2 -> T3 -> Void>
+{
+	public static function pipe<T1, T2, T3, TNew>(promise : Promise<T1 -> T2 -> T3 -> Void>, success : T1 -> T2 -> T3 -> Promise<TNew>) : Promise<TNew>
+	{
+		var deferred = new Deferred3();
+		promise.then(function(v1 : T1, v2 : T2, v3 : T3) {
+			success(v1, v2, v3).then(cast deferred.resolve);
+		});
+		return cast deferred.promise;
+	}
+	
+	public function new()
+		promise = new Promise<T1 -> T2 -> T3 -> Void>();
+		
+	public function resolve(v1 : T1, v2 : T2, v3 : T3)
+		return promise.setState(Success([v1, v2, v3]));
+}
+
+@:access(thx.react.Promise)
+class Deferred4<T1, T2, T3, T4> extends BaseDeferred<T1 -> T2 -> T3 -> T4 -> Void>
+{
+	public static function pipe<T1, T2, T3, T4, TNew>(promise : Promise<T1 -> T2 -> T3 -> T4 -> Void>, success : T1 -> T2 -> T3 -> T4 -> Promise<TNew>) : Promise<TNew>
+	{
+		var deferred = new Deferred3();
+		promise.then(function(v1 : T1, v2 : T2, v3 : T3, v4 : T4) {
+			success(v1, v2, v3, v4).then(cast deferred.resolve);
+		});
+		return cast deferred.promise;
+	}
+	
+	public function new()
+		promise = new Promise<T1 -> T2 -> T3 -> T4 -> Void>();
+		
+	public function resolve(v1 : T1, v2 : T2, v3 : T3, v4 : T4)
+		return promise.setState(Success([v1, v2, v3, v4]));
+}
+
+@:access(thx.react.Promise)
+class Deferred5<T1, T2, T3, T4, T5> extends BaseDeferred<T1 -> T2 -> T3 -> T4 -> T5 -> Void>
+{
+	public static function pipe<T1, T2, T3, T4, T5, TNew>(promise : Promise<T1 -> T2 -> T3 -> T4 -> T5 -> Void>, success : T1 -> T2 -> T3 -> T4 -> T5 -> Promise<TNew>) : Promise<TNew>
+	{
+		var deferred = new Deferred3();
+		promise.then(function(v1 : T1, v2 : T2, v3 : T3, v4 : T4, v5 : T5) {
+			success(v1, v2, v3, v4, v5).then(cast deferred.resolve);
+		});
+		return cast deferred.promise;
+	}
+	
+	public function new()
+		promise = new Promise<T1 -> T2 -> T3 -> T4 -> T5 -> Void>();
+		
+	public function resolve(v1 : T1, v2 : T2, v3 : T3, v4 : T4, v5 : T5)
+	return promise.setState(Success([v1, v2, v3, v4, v5]));
 }

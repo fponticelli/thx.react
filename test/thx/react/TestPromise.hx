@@ -6,20 +6,20 @@ package thx.react;
  */
 
 import utest.Assert;
+using thx.react.Promise;
 
-class TestDeferred
+class TestPromise
 {
 	public function new() { }
-
 	public function testResolve()
 	{
 		var deferred = new Deferred();
 		var counter = 0;
-		deferred.then(function(v) counter += v);
+		deferred.promise.then(function(v) counter += v);
 		Assert.equals(0, counter);
 		deferred.resolve(3);
 		Assert.equals(3, counter);
-		deferred.then(function(v) counter *= v);
+		deferred.promise.then(function(v) counter *= v);
 		Assert.equals(9, counter);
 	}
 
@@ -32,14 +32,15 @@ class TestDeferred
 
 	public function testFailure()
 	{
-		var d = new Deferred()
+		var d = new Deferred();
+		d.promise
 			.then(function(_) Assert.fail("success should never occur"))
 			.fail(function(e : Int) Assert.fail("this Int error should never occur"))
-			.fail(function(e : String) Assert.equals("error", e))
-			.reject("error");
+			.fail(function(e : String) Assert.equals("error", e));
+		d.reject("error");
 	}
-
-	public function testResolveFirstFailure()
+	
+	public function testResolveRejectFirst()
 	{
 		new Deferred()
 			.reject("error")
@@ -51,38 +52,42 @@ class TestDeferred
 	public function testProgress()
 	{
 		var counter = 0;
-		new Deferred()
+		var d = new Deferred();
+		d.promise
 			.then(function(_) Assert.fail("success should never occur"))
 			.progress(function(e : Int) counter += e)
-			.progress(function(e : String) Assert.fail("this Int error should never occur"))
-			.notify(2)
-			.notify(3);
+			.progress(function(e : String) Assert.fail("this Int error should never occur"));
+		d.notify(2).notify(3);
 		Assert.equals(5, counter);
 	}
 
 	public function testPipe()
 	{
-		var test = null;
-		Deferred.value(1)
-			.pipe(function(i : Int) return Deferred.value("#" + i))
-			.then(function(s : String) test = s);
-		Assert.equals("#1", test);
+		Promise.value(1).pipe(function(i : Int) return Promise.value("#" + i))
+			.then(function(s : String) Assert.equals("#1", s));
 	}
-	
+
 	public function testException()
 	{
-		Deferred.value(1)
+		Promise.value(1)
 			.then(function(i : Int) throw "argh!")
 			.fail(function(e : Dynamic) Assert.equals("argh!", e));
 	}
 	
 	public function testThenFailure()
 	{
-		new Deferred()
-			.then(
-				function(i : Int) Assert.fail(),
-				function(e : Dynamic) Assert.isTrue(true)
-			)
-			.reject(1);
+		var d = new Deferred();
+		d.promise.then(
+			function(i : Int) Assert.fail(),
+			function(e : Dynamic) Assert.isTrue(true)
+		);
+		d.reject(1);
+	}
+	
+	public function testDeferred2()
+	{
+		var d = new Deferred2();
+		d.promise.then(function(s : String, i : Int) Assert.equals("Haxe3", s + i));
+		d.resolve("Haxe", 3);
 	}
 }
