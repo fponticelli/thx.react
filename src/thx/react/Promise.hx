@@ -38,6 +38,23 @@ class Promise<T>
 		this.handlers_always = [];
 	}
 	
+	public function isResolved()
+		return switch(state)
+		{
+			case Success(_): true;
+			case _: false;
+		}
+	
+	public function isFailure()
+		return switch(state)
+		{
+			case Failure(_), ProgressException(_): true;
+			case _: false;
+		}
+		
+	public function isComplete()
+		return isResolved() || isFailure();
+	
 	public function then(success : ProcedureDef<T>, ?failure : Dynamic -> Void)
 	{
 		handlers_succcess.push(success);
