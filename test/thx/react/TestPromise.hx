@@ -90,4 +90,14 @@ class TestPromise
 		d.promise.then(function(s : String, i : Int) Assert.equals("Haxe3", s + i));
 		d.resolve("Haxe", 3);
 	}
+	
+	public function testAwait()
+	{
+		Promise.value(1)
+			.await(Promise.value("x"))
+			.then(function(v1 : Int, v2 : String) {
+				Assert.equals(1, v1);
+				Assert.equals("x", v2);
+			});
+	}
 }
