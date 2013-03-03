@@ -5,6 +5,7 @@ package thx.react;
  * @author Franco Ponticelli
  */
 
+import thx.core.Floats;
 import utest.Assert;
 using thx.react.Promise;
 
@@ -98,6 +99,20 @@ class TestPromise
 			.then(function(v1 : Int, v2 : String) {
 				Assert.equals(1, v1);
 				Assert.equals("x", v2);
+			});
+	}
+	
+	public function testAwaitMany()
+	{
+		Promise.value2("a", 1)
+			.await0(Promise.value0())
+			.await3(Promise.value3(0.1, true, null))
+			.then(function(s : String, i : Int, f : Float, b : Bool, d : Dynamic) {
+				Assert.equals("a", s);
+				Assert.equals(1, i);
+				Assert.equals(0.1, f);
+				Assert.isTrue(b);
+				Assert.isNull(d);
 			});
 	}
 }

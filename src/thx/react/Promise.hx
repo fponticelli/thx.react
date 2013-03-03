@@ -13,9 +13,19 @@ import thx.core.Procedure;
 
 class Promise<T>
 {
+	public inline static function value0() : Promise<Void -> Void>
+		return new Deferred0().resolve();
 	public inline static function value<T>(v : T) : Promise<T -> Void>
 		return new Deferred().resolve(v);
-
+	public inline static function value2<T1, T2>(v1 : T1, v2 : T2) : Promise<T1 -> T2 -> Void>
+		return new Deferred2().resolve(v1, v2);
+	public inline static function value3<T1, T2, T3>(v1 : T1, v2 : T2, v3 : T3) : Promise<T1 -> T2 -> T3 -> Void>
+		return new Deferred3().resolve(v1, v2, v3);
+	public inline static function value4<T1, T2, T3, T4>(v1 : T1, v2 : T2, v3 : T3, v4 : T4) : Promise<T1 -> T2 -> T3 -> T4 -> Void>
+		return new Deferred4().resolve(v1, v2, v3, v4);
+	public inline static function value5<T1, T2, T3, T4, T5>(v1 : T1, v2 : T2, v3 : T3, v4 : T4, v5 : T5) : Promise<T1 -> T2 -> T3 -> T4 -> T5 -> Void>
+		return new Deferred5().resolve(v1, v2, v3, v4, v5);
+		
 	var handlers : Array<ProcedureDef<T>>;
 	var state : PromiseState;
 	var errorDispatcher : Dispatcher;
