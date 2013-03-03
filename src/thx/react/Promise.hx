@@ -386,6 +386,39 @@ class Deferred3<T1, T2, T3> extends BaseDeferred<T1 -> T2 -> T3 -> Void>
 		return cast deferred.promise;
 	}
 	
+	public static function await0<T1, T2, T3>(promise : Promise<T1 -> T2 -> T3 -> Void>, other : Promise<Void -> Void>) : Promise<T1 -> T2 -> T3 -> Void>
+	{
+		var deferred = new Deferred3<T1, T2, T3>();
+		promise.then(function(v1 : T1, v2 : T2, v3 : T3) {
+			other.then(cast function() {
+				deferred.resolve(v1, v2, v3);
+			});
+		});
+		return deferred.promise;
+	}
+	
+	public static function await<T1, T2, T3, T4>(promise : Promise<T1 -> T2 -> T3 -> Void>, other : Promise<T4 -> Void>) : Promise<T1 -> T2 -> T3 -> T4 -> Void>
+	{
+		var deferred = new Deferred4<T1, T2, T3, T4>();
+		promise.then(function(v1 : T1, v2 : T2, v3 : T3) {
+			other.then(cast function(v4 : T4) {
+				deferred.resolve(v1, v2, v3, v4);
+			});
+		});
+		return deferred.promise;
+	}
+	
+	public static function await1<T1, T2, T3, T4, T5>(promise : Promise<T1 -> T2 -> T3 -> Void>, other : Promise<T4 -> T5 -> Void>) : Promise<T1 -> T2 -> T3 -> T4 -> T5 -> Void>
+	{
+		var deferred = new Deferred5<T1, T2, T3, T4, T5>();
+		promise.then(function(v1 : T1, v2 : T2, v3 : T3) {
+			other.then(cast function(v4 : T4, v5 : T5) {
+				deferred.resolve(v1, v2, v3, v4, v5);
+			});
+		});
+		return deferred.promise;
+	}
+	
 	public function new()
 		promise = new Promise<T1 -> T2 -> T3 -> Void>();
 		
@@ -405,6 +438,28 @@ class Deferred4<T1, T2, T3, T4> extends BaseDeferred<T1 -> T2 -> T3 -> T4 -> Voi
 		return cast deferred.promise;
 	}
 	
+	public static function await0<T1, T2, T3, T4>(promise : Promise<T1 -> T2 -> T3 -> T4 -> Void>, other : Promise<Void -> Void>) : Promise<T1 -> T2 -> T3 -> T4 -> Void>
+	{
+		var deferred = new Deferred4<T1, T2, T3, T4>();
+		promise.then(function(v1 : T1, v2 : T2, v3 : T3, v4 : T4) {
+			other.then(cast function() {
+				deferred.resolve(v1, v2, v3, v4);
+			});
+		});
+		return deferred.promise;
+	}
+	
+	public static function await<T1, T2, T3, T4, T5>(promise : Promise<T1 -> T2 -> T3 -> T4 -> Void>, other : Promise<T5 -> Void>) : Promise<T1 -> T2 -> T3 -> T4 -> T5 -> Void>
+	{
+		var deferred = new Deferred5<T1, T2, T3, T4, T5>();
+		promise.then(function(v1 : T1, v2 : T2, v3 : T3, v4 : T4) {
+			other.then(cast function(v5 : T5) {
+				deferred.resolve(v1, v2, v3, v4, v5);
+			});
+		});
+		return deferred.promise;
+	}
+	
 	public function new()
 		promise = new Promise<T1 -> T2 -> T3 -> T4 -> Void>();
 		
@@ -422,6 +477,17 @@ class Deferred5<T1, T2, T3, T4, T5> extends BaseDeferred<T1 -> T2 -> T3 -> T4 ->
 			success(v1, v2, v3, v4, v5).then(cast deferred.resolve);
 		});
 		return cast deferred.promise;
+	}
+	
+	public static function await<T1, T2, T3, T4, T5>(promise : Promise<T1 -> T2 -> T3 -> T4 -> T5 -> Void>, other : Promise<Void -> Void>) : Promise<T1 -> T2 -> T3 -> T4 -> T5 -> Void>
+	{
+		var deferred = new Deferred5<T1, T2, T3, T4, T5>();
+		promise.then(function(v1 : T1, v2 : T2, v3 : T3, v4 : T4, v5 : T5) {
+			other.then(cast function() {
+				deferred.resolve(v1, v2, v3, v4, v5);
+			});
+		});
+		return deferred.promise;
 	}
 	
 	public function new()
