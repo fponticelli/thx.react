@@ -123,8 +123,7 @@ class Promise<T>
 			types = Dispatcher.argumentTypes(handler, arity);
 		return macro $ethis.progress_impl($v{types}, new thx.core.Procedure($handler, $v{arity}));
 	}
-	
-	//await
+
 	public function toString() return 'Promise (handlers: ${handlers.length}, state : $state)';
 }
 
@@ -137,23 +136,23 @@ enum PromiseState {
 }
 
 @:access(thx.react.Promise)
-class BaseDeferred<TPromise>
+class BaseDeferred<TPromise, TDeferred>
 {
 	public var promise(default, null) : Promise<TPromise>;
 	public function reject<TError>(error : TError)
 		return promise.setState(Failure([error]));
 
-	public function notify<TProgress>(data : TProgress)
+	public function notify<TProgress>(data : TProgress) : TDeferred
 	{
 		promise.setState(Progress([data]));
-		return this;
+		return cast this;
 	}
 	
 	public function toString() return '${Type.getClassName(Type.getClass(this)).split(".").pop()} with $promise';
 }
 
 @:access(thx.react.Promise)
-class Deferred0 extends BaseDeferred<Void -> Void>
+class Deferred0 extends BaseDeferred<Void -> Void, Deferred0>
 {
 	public static function pipe<TNew>(promise : Promise<Void -> Void>, success : Void -> Promise<TNew>) : Promise<TNew>
 	{
@@ -238,7 +237,7 @@ class Deferred0 extends BaseDeferred<Void -> Void>
 }
 
 @:access(thx.react.Promise)
-class Deferred<T1> extends BaseDeferred<T1 -> Void>
+class Deferred<T1> extends BaseDeferred<T1 -> Void, Deferred<T1>>
 {
 	public static function pipe<T1, TNew>(promise : Promise<T1 -> Void>, success : T1 -> Promise<TNew>) : Promise<TNew>
 	{
@@ -312,7 +311,7 @@ class Deferred<T1> extends BaseDeferred<T1 -> Void>
 }
 
 @:access(thx.react.Promise)
-class Deferred2<T1, T2> extends BaseDeferred<T1 -> T2 -> Void>
+class Deferred2<T1, T2> extends BaseDeferred<T1 -> T2 -> Void, Deferred2<T1, T2>>
 {
 	public static function pipe<T1, T2, TNew>(promise : Promise<T1 -> T2 -> Void>, success : T1 -> T2 -> Promise<TNew>) : Promise<TNew>
 	{
@@ -375,7 +374,7 @@ class Deferred2<T1, T2> extends BaseDeferred<T1 -> T2 -> Void>
 }
 
 @:access(thx.react.Promise)
-class Deferred3<T1, T2, T3> extends BaseDeferred<T1 -> T2 -> T3 -> Void>
+class Deferred3<T1, T2, T3> extends BaseDeferred<T1 -> T2 -> T3 -> Void, Deferred3<T1, T2, T3>>
 {
 	public static function pipe<T1, T2, T3, TNew>(promise : Promise<T1 -> T2 -> T3 -> Void>, success : T1 -> T2 -> T3 -> Promise<TNew>) : Promise<TNew>
 	{
@@ -427,7 +426,7 @@ class Deferred3<T1, T2, T3> extends BaseDeferred<T1 -> T2 -> T3 -> Void>
 }
 
 @:access(thx.react.Promise)
-class Deferred4<T1, T2, T3, T4> extends BaseDeferred<T1 -> T2 -> T3 -> T4 -> Void>
+class Deferred4<T1, T2, T3, T4> extends BaseDeferred<T1 -> T2 -> T3 -> T4 -> Void, Deferred4<T1, T2, T3, T4>>
 {
 	public static function pipe<T1, T2, T3, T4, TNew>(promise : Promise<T1 -> T2 -> T3 -> T4 -> Void>, success : T1 -> T2 -> T3 -> T4 -> Promise<TNew>) : Promise<TNew>
 	{
@@ -468,7 +467,7 @@ class Deferred4<T1, T2, T3, T4> extends BaseDeferred<T1 -> T2 -> T3 -> T4 -> Voi
 }
 
 @:access(thx.react.Promise)
-class Deferred5<T1, T2, T3, T4, T5> extends BaseDeferred<T1 -> T2 -> T3 -> T4 -> T5 -> Void>
+class Deferred5<T1, T2, T3, T4, T5> extends BaseDeferred<T1 -> T2 -> T3 -> T4 -> T5 -> Void, Deferred5<T1, T2, T3, T4, T5>>
 {
 	public static function pipe<T1, T2, T3, T4, T5, TNew>(promise : Promise<T1 -> T2 -> T3 -> T4 -> T5 -> Void>, success : T1 -> T2 -> T3 -> T4 -> T5 -> Promise<TNew>) : Promise<TNew>
 	{
