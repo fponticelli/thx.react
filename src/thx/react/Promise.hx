@@ -26,21 +26,30 @@ class Promise<T>
 	public inline static function value5<T1, T2, T3, T4, T5>(v1 : T1, v2 : T2, v3 : T3, v4 : T4, v5 : T5) : Promise<T1 -> T2 -> T3 -> T4 -> T5 -> Void>
 		return new Deferred5().resolve(v1, v2, v3, v4, v5);
 		
-	var handlers : Array<ProcedureDef<T>>;
+	var handlers_succcess : Array<ProcedureDef<T>>;
+	var handlers_always : Array<Void -> Void>;
 	var state : PromiseState;
 	var errorDispatcher : Dispatcher;
 	var progressDispatcher : Dispatcher;
 	function new()
 	{
 		this.state = Idle;
-		this.handlers = [];
+		this.handlers_succcess = [];
+		this.handlers_always = [];
 	}
 	
 	public function then(success : ProcedureDef<T>, ?failure : Dynamic -> Void)
 	{
-		handlers.push(success);
+		handlers_succcess.push(success);
 		if (null != failure)
 			getErrorDispatcher().binder.bind("Dynamic", failure);
+		update();
+		return this;
+	}
+	
+	public function always(handler : Void -> Void)
+	{
+		handlers_always.push(handler);
 		update();
 		return this;
 	}
@@ -68,11 +77,15 @@ class Promise<T>
 		{
 			case Idle:
 			case Success(args):
-				var handler;
+				var handler_success,
+					handler_always,
+					empty_args = [];
 				try
 				{
-					while (null != (handler = handlers.shift()))
-						handler.apply(args);
+					while (null != (handler_success = handlers_succcess.shift()))
+						handler_success.apply(args);
+					while (null != (handler_always = handlers_always.shift()))
+						Reflect.callMethod(null, handler_always, empty_args);
 				} catch (e : Dynamic) {
 					setState(ProgressException([e]));
 					update();
@@ -83,6 +96,10 @@ class Promise<T>
 					errorDispatcher.triggerDynamic(args);
 					errorDispatcher = null;
 				}
+				var handler_always,
+					empty_args = [];
+				while (null != (handler_always = handlers_always.shift()))
+					Reflect.callMethod(null, handler_always, empty_args);
 			case Progress(args):
 				if (null != progressDispatcher)
 				{
@@ -134,7 +151,7 @@ class Promise<T>
 		return macro $ethis.progress_impl($v{types}, new thx.core.Procedure($handler, $v{arity}));
 	}
 
-	public function toString() return 'Promise (handlers: ${handlers.length}, state : $state)';
+	public function toString() return 'Promise (handlers: ${handlers_succcess.length}, state : $state)';
 }
 
 enum PromiseState {

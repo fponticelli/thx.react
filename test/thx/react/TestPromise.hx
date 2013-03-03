@@ -115,4 +115,14 @@ class TestPromise
 				Assert.isNull(d);
 			});
 	}
+	
+	public function testAlwaysSuccess()
+	{
+		Promise.value(1).always(function() Assert.isTrue(true));
+	}
+	
+	public function testAlwaysError()
+	{
+		new Deferred().reject(1).always(function() Assert.isTrue(true));
+	}
 }
