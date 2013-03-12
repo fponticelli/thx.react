@@ -1,0 +1,7 @@
+<project name="thx" url="http://github.com/fponticelli/thx.react/" license="BSD">
+    <user name="fponticelli"/>
+    <tag v="events"/>
+	<tag v="cross"/>
+    <description>Events library</description>
+    <version name="0.0.1">alpha release</version>
+</project>
