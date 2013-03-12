@@ -27,7 +27,7 @@ class Dispatcher
 		var t = Context.typeof(fexpr);
 		if(t.argumentIsOptional(index))
 			throw "handler argument cannot be optional";
-		return TypeTools.toString(t.typeOfArgument(index));
+		return TypeTools.toString(t.getArgumentType(index));
 	}
 	
 	public static function argumentTypes(handler : Expr, length : Int)

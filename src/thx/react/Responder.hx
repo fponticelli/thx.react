@@ -5,7 +5,15 @@
 
 package thx.react;
 
+using thx.core.Types;
 using thx.react.Promise;
+
+#if macro
+import haxe.macro.Expr;
+import haxe.macro.Context;
+using haxe.macro.TypeTools;
+using thx.macro.MacroTypes;
+#end
 
 class Responder
 {
@@ -17,18 +25,33 @@ class Responder
 		respondersMap = new Map();
 		requestsMap   = new Map();
 	}
-	
-	public function request<TRequest, TResponse>(payload : TRequest) : Promise<TResponse>
+
+
+	public function request<TRequest, TResponse>(payload : TRequest, responseType : Class<TResponse>) : Promise<TResponse -> Void>
 	{
-		return null;
+		var request  = Type.typeof(payload).toString(),
+			response = responseType.toString();
+		return request_impl(request, response, payload);
 	}
+
+/*
+	macro public function request<TResponse>(ethis : ExprOf<Responder>, payload : Expr) : ExprOf<Promise<TResponse -> Void>>
+	{
+		var request  = TypeTools.toString(Context.typeof(payload)),
+			response = ""; //responseType.toString();
+		trace(Context.getLocalMethod().get());
+//		trace(haxe.macro.Type.Ref.get());
+//		return request_impl(request, response, payload);
+		return macro $ethis.request_impl($v{request}, $v{response}, $payload);
+	}
+*/
 	
 	@:noCompletion @:noDoc
-	public function request_impl(requestType : String, responseType : String, payload : Dynamic)
+	public function request_impl<TResponse>(requestType : String, responseType : String, payload : Dynamic) : Promise<TResponse -> Void>
 	{
 		var key = getKey(requestType, responseType),
 			arr = requestsMap.get(key),
-			deferred = new Deferred<Dynamic>();
+			deferred = new Deferred<TResponse>();
 		if (null == arr)
 			requestsMap.set(key, arr = []);
 		arr.unshift({ payload : payload, deferred : deferred });
@@ -36,14 +59,15 @@ class Responder
 		return deferred.promise;
 	}
 	
-	public function respond<TRequest, TResponse>(handler : TRequest -> Null<Promise<TResponse>>)
+	public function respond<TRequest, TResponse>(handler : TRequest -> Null<Promise<TResponse -> Void>>, requestType : Class<TRequest>, responseType : Class<TResponse>)
 	{
-		
-		return this;
+		var request  = requestType.toString(),
+			response = responseType.toString();
+		return respond_impl(request, response, handler);
 	}
 	
 	@:noCompletion @:noDoc
-	public function respond_impl(requestType : String, responseType : String, handler : Dynamic -> Null<Promise<Dynamic>>)
+	public function respond_impl<TResponse>(requestType : String, responseType : String, handler : Dynamic -> Null<Promise<TResponse -> Void>>)
 	{
 		var key = getKey(requestType, responseType),
 			arr = respondersMap.get(key);

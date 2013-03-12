@@ -2,6 +2,6 @@
 -cp test
 -cp ../thx.core/src
 -lib utest
--neko bin/thxreact.n
+-neko bin/thx.react.n
 -D haxe3
 -main TestAll
