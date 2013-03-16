@@ -6,6 +6,7 @@ import thx.react.IObserver;
 class Observable<T> implements IObservable<T>
 {
 	var observers : Array<IObserver<T>>;
+
 	public function new()
 	{
 		observers = [];

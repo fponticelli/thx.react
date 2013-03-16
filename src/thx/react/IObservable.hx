@@ -7,14 +7,12 @@ interface IObservable<T>
 {
 	public function attach(observer : IObserver<T>) : Void;
 	public function detach(observer : IObserver<T>) : Void;
-	public function clear() : Void;
 }
 
 interface IObservable0
 {
 	public function attach(observer : IObserver0) : Void;
 	public function detach(observer : IObserver0) : Void;
-	public function clear() : Void;
 }
 
 class IObservables
