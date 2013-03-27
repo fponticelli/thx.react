@@ -1,12 +1,12 @@
 package thx.react.promise;
 
-using thx.reac.Promise;
+using thx.react.Promise;
+import haxe.io.Input;
+import haxe.io.Output;
 
 class Http 
 {
-	public var cnxTimeout(get_cnxTimeout, set_cnxTimeout) : Float;
-	public var noShutdown(get_noShutdown, set_noShutdown) : Bool;
-	public var responseHeaders(default,null) : StringMap<String>
+	public var responseHeaders(default,null) : Map<String, String>;
 
 	var connection : haxe.Http;
 	public function new(url : String)
@@ -18,20 +18,6 @@ class Http
 	{
 		var p = promise();
 		connection.request(post);
-		return p;
-	}
-
-	public function customRequest(post : Bool, api : Output, ?sock : AbstractSocket, ?method : String)
-	{
-		var p = promise();
-		connection.customRequest(post, api, sock, method);
-		return p;
-	}
-
-	public function fileTransfert(argname : String, filename : String, file : Input, size : Int)
-	{
-		var p = promise();
-		connection.fileTransfert(argname, filename, file, size);
 		return p;
 	}
 
@@ -55,21 +41,9 @@ class Http
 	function promise()
 	{
 		var deferred = new Deferred();
-		connection.onData   = deferred.resolve;
-		connection.onError  = deferred.reject;
+		connection.onData   = function(v) deferred.resolve(v);
+		connection.onError  = function(v) deferred.reject(v);
 //		connection.onStatus = deferred.resolve;
 		return deferred.promise;
 	}
-
-	function get_cnxTimeout()
-		return connection.cnxTimeout;
-
-	function set_cnxTimeout(value)
-		return connection.cnxTimeout = value;
-
-	function get_noShutdown()
-		return connection.noShutdown;
-
-	function set_noShutdown(value)
-		return connection.noShutdown = value;
 }
