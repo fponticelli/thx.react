@@ -23,12 +23,21 @@ class Provider
 	
 	public function provide<T>(data : T)
 	{
-		var type = Type.typeof(data).toString(),
-			provider = getProvider(type);
-		if (provider.promise.isComplete())
-			providers.set(type, provider = new Deferred<Dynamic>());
-		provider.resolve(data);
+		provideImpl(Type.typeof(data).toString(), function(d) d.resolve(data));
 		return this;
+	}
+
+	public function provideLazy<T>(type : Class<T>, handler : Deferred<T> -> Void)
+	{
+		provideImpl(type.toString(), cast handler);
+		return this;
+	}
+
+	function provideImpl(type : String, handler : Deferred<Dynamic> -> Void)
+	{
+		var name = type.toString(),
+			provider = getProvider(name);
+		handler(provider);
 	}
 	
 	function getProvider(type : String)
