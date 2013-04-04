@@ -44,13 +44,20 @@ class Buffer
 		return queue;
 	}
 
-	macro public function consume<T>(ethis : ExprOf<Buffer>, handler : Expr)
+#if macro
+	public static function getArrayArgumentType(handler : Expr)
 	{
 		var ftype  = Context.typeof(handler),
 			type   = ftype.getArgumentType(0),
 			cls    = type.getClass(),
-			params = type.getClassTypeParameters(),
-			name   = params[0].toString();
+			params = type.getClassTypeParameters();
+		return params[0].toString();
+	}
+#end
+
+	macro public function consume<T>(ethis : ExprOf<Buffer>, handler : Expr)
+	{
+		var name = getArrayArgumentType(handler);
 		return macro $ethis.consumeImpl($v{name}, $handler);
 	}
 
