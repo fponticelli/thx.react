@@ -10,7 +10,7 @@ import thx.react.Promise;
 
 class Provider
 {
-	var providers : Map<String, Deferred<Dynamic>>;
+	var providers : Map<String, { deferred : Deferred<Dynamic>, fullfiller : Void -> Void, demanded : Bool }>;
 	public function new() 
 	{
 		providers = new Map();
@@ -18,7 +18,12 @@ class Provider
 
 	public function demand<T>(type : Class<T>) : Promise<T -> Void>
 	{
-		return cast getProvider(type.toString()).promise;
+		var provider = getProvider(type.toString());
+		if(!provider.demanded && null != provider.fullfiller)
+			provider.fullfiller();
+		
+		provider.demanded = true;
+		return cast provider.deferred.promise;
 	}
 	
 	public function provide<T>(data : T)
@@ -37,14 +42,18 @@ class Provider
 	{
 		var name = type.toString(),
 			provider = getProvider(name);
-		handler(provider);
+		if(null != provider.fullfiller)
+			throw "provider implementation already provided";
+		provider.fullfiller = function() handler(provider.deferred);
+		if(provider.demanded)
+			provider.fullfiller();
 	}
 	
 	function getProvider(type : String)
 	{
 		var provider = providers.get(type);
 		if (null == provider)
-			providers.set(type, provider = new Deferred<Dynamic>());
+			providers.set(type, provider = { deferred : new Deferred<Dynamic>(), fullfiller : null, demanded : false });
 		return provider;
 	}
 }
