@@ -30,6 +30,7 @@ class Buffer
 		{
 			var name  = Type.typeof(value).toString(),
 				queue = ensureQueue(name);
+			names.push(name);
 			queue.push(value);
 		}
 		for(name in names)
