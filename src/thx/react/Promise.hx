@@ -206,6 +206,9 @@ class Deferred0 extends BaseDeferred<Void -> Void, Deferred0>
 		});
 		return cast deferred.promise;
 	}
+
+	public static function with<T>(promise : Promise<Void -> Void>, value : T) : Promise<T -> Void>
+		return Deferred0.await(promise, Promise.value(value));
 	
 	public static function await0(promise : Promise<Void -> Void>, other : Promise<Void -> Void>) : Promise<Void -> Void>
 	{
@@ -291,6 +294,9 @@ class Deferred<T1> extends BaseDeferred<T1 -> Void, Deferred<T1>>
 		});
 		return cast deferred.promise;
 	}
+
+	public static function with<T1, T2>(promise : Promise<T1 -> Void>, value : T2) : Promise<T1 -> T2 -> Void>
+		return Deferred.await(promise, Promise.value(value));
 	
 	public static function await0<T1>(promise : Promise<T1 -> Void>, other : Promise<Void -> Void>) : Promise<T1 -> Void>
 	{
@@ -365,6 +371,9 @@ class Deferred2<T1, T2> extends BaseDeferred<T1 -> T2 -> Void, Deferred2<T1, T2>
 		});
 		return cast deferred.promise;
 	}
+
+	public static function with<T1, T2, T3>(promise : Promise<T1 -> T2 -> Void>, value : T3) : Promise<T1 -> T2 -> T3 -> Void>
+		return Deferred2.await(promise, Promise.value(value));
 	
 	public static function await0<T1, T2>(promise : Promise<T1 -> T2 -> Void>, other : Promise<Void -> Void>) : Promise<T1 -> T2 -> Void>
 	{
@@ -428,6 +437,9 @@ class Deferred3<T1, T2, T3> extends BaseDeferred<T1 -> T2 -> T3 -> Void, Deferre
 		});
 		return cast deferred.promise;
 	}
+
+	public static function with<T1, T2, T3, T4>(promise : Promise<T1 -> T2 -> T3 -> Void>, value : T4) : Promise<T1 -> T2 -> T3 -> T4 -> Void>
+		return Deferred3.await(promise, Promise.value(value));
 	
 	public static function await0<T1, T2, T3>(promise : Promise<T1 -> T2 -> T3 -> Void>, other : Promise<Void -> Void>) : Promise<T1 -> T2 -> T3 -> Void>
 	{
@@ -480,6 +492,9 @@ class Deferred4<T1, T2, T3, T4> extends BaseDeferred<T1 -> T2 -> T3 -> T4 -> Voi
 		});
 		return cast deferred.promise;
 	}
+
+	public static function with<T1, T2, T3, T4, T5>(promise : Promise<T1 -> T2 -> T3 -> T4 -> Void>, value : T5) : Promise<T1 -> T2 -> T3 -> T4 -> T5 -> Void>
+		return Deferred4.await(promise, Promise.value(value));
 	
 	public static function await0<T1, T2, T3, T4>(promise : Promise<T1 -> T2 -> T3 -> T4 -> Void>, other : Promise<Void -> Void>) : Promise<T1 -> T2 -> T3 -> T4 -> Void>
 	{

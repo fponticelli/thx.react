@@ -11,7 +11,10 @@ using thx.core.Types;
 class Buffer 
 {
 	var queues : Map<String, Array<Dynamic>>;
-	var consumers : Map<String, Array<Dynamic> -> Void>;
+	var consumers : Map<String, {
+		handler : Array<Dynamic> -> Void,
+		pos : Int
+	}>;
 	public function new()
 	{
 		queues = new Map();
@@ -67,7 +70,7 @@ class Buffer
 	{
 		if(consumers.exists(name))
 			throw 'a consumer for $name has already been set';
-		consumers.set(name, cast handler);
+		consumers.set(name, { handler : cast handler, pos : 0 });
 		trigger(name);
 	}
 
@@ -79,15 +82,11 @@ class Buffer
 		var queue = queues.get(name);
 		if(null == queue)
 			return;
-		queues.remove(name);
-		consumer(queue);
+		var arr = queue.slice(consumer.pos),
+			len = arr.length;
+		if(len > 0) {
+			consumer.handler(arr);
+			consumer.pos += len;
+		}
 	}
-/*
-	macro public function consume(ethis : ExprOf<Buffer>, handler : Expr)
-	{
-		var arity = getArity(handler),
-			types = argumentTypes(handler, arity);
-		return macro $ethis.binder.bind($v{types}, new thx.core.Procedure($handler, $v{arity}));
-	}
-	*/
 }
