@@ -112,6 +112,8 @@ class Promise<T>
 				{
 					errorDispatcher.triggerDynamic(args);
 					errorDispatcher = null;
+				} else {
+					throw new PromiseException(args);
 				}
 				var handler_always,
 					empty_args = [];
@@ -141,17 +143,19 @@ class Promise<T>
 	}
 	
 	@:noCompletion @:noDoc
-	public function fail_impl(names : String, handler : Dynamic)
+	public function fail_impl(names : String, handler : Dynamic) : Promise<T>
 	{
 		getErrorDispatcher().binder.bind(names, handler);
-		return update();
+		update();
+		return this;
 	}
 	
 	@:noCompletion @:noDoc
-	public function progress_impl(names : String, handler : Dynamic)
+	public function progress_impl(names : String, handler : Dynamic) : Promise<T>
 	{
 		getProgressDispatcher().binder.bind(names, handler);
-		return update();
+		update();
+		return this;
 	}
 	
 	macro public function fail<TPromise>(ethis : ExprOf<Promise<TPromise>>, handler : Expr) : ExprOf<Promise<TPromise>>
@@ -169,6 +173,23 @@ class Promise<T>
 	}
 
 	public function toString() return 'Promise (handlers: ${handlers_succcess.length}, state : $state)';
+}
+
+class PromiseException
+{
+	public var args(default, null) : Array<Dynamic>;
+	public function new(args : Array<Dynamic>)
+	{
+		this.args = args;
+	}
+
+	public function toString()
+	{
+		if(Std.is(args[0], PromiseException))
+			return cast(args[0], PromiseException).toString();
+		else
+			return 'PromiseException: ${args.join(", ")}';
+	}
 }
 
 enum PromiseState {

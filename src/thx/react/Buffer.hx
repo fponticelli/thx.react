@@ -11,10 +11,10 @@ using thx.core.Types;
 class Buffer 
 {
 	var queues : Map<String, Array<Dynamic>>;
-	var consumers : Map<String, {
+	var consumers : Map<String, Array<{
 		handler : Array<Dynamic> -> Void,
 		pos : Int
-	}>;
+	}>>;
 	public function new()
 	{
 		queues = new Map();
@@ -68,25 +68,29 @@ class Buffer
 	@:noDoc @:noDisplay
 	public function consumeImpl<T>(name : String, handler : Array<T> -> Void)
 	{
-		if(consumers.exists(name))
-			throw 'a consumer for $name has already been set';
-		consumers.set(name, { handler : cast handler, pos : 0 });
+		var list = consumers.get(name);
+		if(null == list)
+			consumers.set(name, list = []);
+		list.push({ handler : cast handler, pos : 0 });
 		trigger(name);
 	}
 
 	function trigger(name : String)
 	{
-		var consumer = consumers.get(name);
-		if(null == consumer)
+		var list = consumers.get(name);
+		if(null == list || list.length == 0)
 			return;
 		var queue = queues.get(name);
 		if(null == queue)
 			return;
-		var arr = queue.slice(consumer.pos),
-			len = arr.length;
-		if(len > 0) {
-			consumer.handler(arr);
-			consumer.pos += len;
+		for(consumer in list)
+		{
+			var arr = queue.slice(consumer.pos),
+				len = arr.length;
+			if(len > 0) {
+				consumer.handler(arr);
+				consumer.pos += len;
+			}
 		}
 	}
 }
