@@ -13,6 +13,30 @@ import thx.core.Procedure;
 
 class Promise<T>
 {
+	public static function list<T>(arr : Array<Promise<T -> Void>>) : Promise<Array<T> -> Void>
+	{
+		var results = [],
+			deferred = new Deferred(),
+			pos = 0;
+		arr = arr.copy();
+		function queue() {
+			var first = arr.shift();
+			if(null == first)
+			{
+				deferred.resolve(results);
+			} else {
+				first
+//					.fail(deferred.reject)
+					.then(function(v : T) {
+						results[pos++] = v;
+						queue();
+					});
+			};
+		}
+		queue();
+		return deferred.promise;
+	}
+
 	public inline static function value0() : Promise<Void -> Void>
 		return new Deferred0().resolve();
 	public inline static function value<T>(v : T) : Promise<T -> Void>
