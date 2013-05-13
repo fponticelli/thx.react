@@ -51,7 +51,7 @@ class Signal<T>
 
 	public function exists(?h : Procedure<T>)
 	{
-		if(null == h)
+		if(null == untyepd h)
 			return handlers.length > 0;
 		else {
 			for (handler in handlers)
