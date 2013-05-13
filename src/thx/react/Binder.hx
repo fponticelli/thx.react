@@ -54,7 +54,7 @@ class Binder
 	{
 		for (name in names.split(KEY_SEPARATOR)) 
 		{
-			if (null == handler)
+			if (null == untyped handler) // horrible fix for problem introduced with RC2
 				map.remove(name);
 			else {
 				var binds = map.get(name);

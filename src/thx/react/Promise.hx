@@ -106,7 +106,7 @@ class Promise<T>
 			case [Success(_), ProgressException(e)]:
 				state = Failure(e);
 			case [_, _]:
-				throw "promise was already resolved/rejected, can't apply new state $newstate";
+				throw 'promise was already $state, can\'t apply new state $newstate';
 		}
 		update();
 		return this;
@@ -136,9 +136,13 @@ class Promise<T>
 				{
 					errorDispatcher.triggerDynamic(args);
 					errorDispatcher = null;
-				} else {
+				}
+// TODO: needs better implementation when Promise doesn't have error catchers
+/*
+				else {
 					throw new PromiseException(args);
 				}
+*/
 				var handler_always,
 					empty_args = [];
 				while (null != (handler_always = handlers_always.shift()))
