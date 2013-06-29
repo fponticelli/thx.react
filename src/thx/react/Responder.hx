@@ -100,7 +100,7 @@ class Responder
 			{
 				requests.splice(i, 1);
 				promise
-					.then(request.deferred.resolve)
+					.then(thx.core.Procedure.ProcedureDef.fromArity1(request.deferred.resolve))
 					.fail(request.deferred.reject)
 					.progress(request.deferred.notify)
 				;
