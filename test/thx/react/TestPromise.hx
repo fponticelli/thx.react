@@ -8,27 +8,45 @@ package thx.react;
 import thx.core.Floats;
 import utest.Assert;
 using thx.react.Promise;
+using thx.react.TestPromise;
 
 class TestPromise
 {
 	public function new() { }
+	static function complete(promise : Promise<Void -> Void>)
+		promise.always(Assert.createAsync());
+/*
+	static function createAsync()
+	{
+		var deferred = new Deferred0(),
+			async = Assert.createAsync();
+		deferred.promise.always(async);
+		return deferred;
+	}
+*/
 	public function testResolve()
 	{
 		var deferred = new Deferred();
 		var counter = 0;
-		deferred.promise.then(function(v) counter += v);
 		Assert.equals(0, counter);
+		deferred.promise.then(function(v) {
+			counter += v;
+			Assert.equals(3, counter);
+		});
 		deferred.resolve(3);
-		Assert.equals(3, counter);
-		deferred.promise.then(function(v) counter *= v);
-		Assert.equals(9, counter);
+		deferred.promise.then(function(v) {
+			counter *= v;
+			Assert.equals(9, counter);	
+		});
+
+		complete(deferred.promise.lose1());
 	}
 
 	public function testValue()
 	{
-		var test = 0;
-		Promise.value(7).then(function(v) test = v);
-		Assert.equals(7, test);
+		Promise.value(7).then(function(v) {
+			Assert.equals(7, v);
+		}).lose1().complete();
 	}
 
 	public function testFailure()
@@ -39,6 +57,7 @@ class TestPromise
 			.fail(function(e : Int) Assert.fail("this Int error should never occur"))
 			.fail(function(e : String) Assert.equals("error", e));
 		d.reject("error");
+		d.promise.lose1().complete();
 	}
 	
 	public function testResolveRejectFirst()
@@ -47,7 +66,8 @@ class TestPromise
 			.reject("error")
 			.then(function(_) Assert.fail("success should never occur"))
 			.fail(function(e : Int) Assert.fail("this Int error should never occur"))
-			.fail(function(e : String) Assert.equals("error", e));
+			.fail(function(e : String) Assert.equals("error", e))
+			.lose1().complete();
 	}
 
 	public function testProgress()
@@ -55,24 +75,37 @@ class TestPromise
 		var counter = 0;
 		var d = new Deferred();
 		d.promise
-			.then(function(_) Assert.fail("success should never occur"))
-			.progress(function(e : Int) counter += e)
+			.then(function(v) Assert.equals("A", v))
+			.progress(function(e : Int) {
+				if(counter == 0)
+				{
+					Assert.equals(2, e);
+				} else if(counter == 1) {
+					Assert.equals(3, e);
+				} else {
+					Assert.fail("should only be invoked twice but is " + (1+counter) + " time");
+				}
+				counter++;
+			})
 			.progress(function(e : String) Assert.fail("this Int error should never occur"));
 		d.notify(2).notify(3);
-		Assert.equals(5, counter);
+		d.resolve("A");
+		d.promise.lose1().complete();
 	}
 
 	public function testPipe()
 	{
 		Promise.value(1).pipe(function(i : Int) return Promise.value("#" + i))
-			.then(function(s : String) Assert.equals("#1", s));
+			.then(function(s : String) Assert.equals("#1", s))
+			.lose1().complete();
 	}
 
 	public function testException()
 	{
 		Promise.value(1)
 			.then(function(i : Int) throw "argh!")
-			.fail(function(e : Dynamic) Assert.equals("argh!", e));
+			.fail(function(e : Dynamic) Assert.equals("argh!", e))
+			.lose1().complete();
 	}
 	
 	public function testThenFailure()
@@ -83,6 +116,7 @@ class TestPromise
 			function(e : Dynamic) Assert.isTrue(true)
 		);
 		d.reject(1);
+		d.promise.lose1().complete();
 	}
 	
 	public function testDeferred2()
@@ -90,6 +124,7 @@ class TestPromise
 		var d = new Deferred2();
 		d.promise.then(function(s : String, i : Int) Assert.equals("Haxe3", s + i));
 		d.resolve("Haxe", 3);
+		d.promise.lose2().complete();
 	}
 	
 	public function testAwait()
@@ -99,7 +134,8 @@ class TestPromise
 			.then(function(v1 : Int, v2 : String) {
 				Assert.equals(1, v1);
 				Assert.equals("x", v2);
-			});
+			})
+			.lose2().complete();
 	}
 	
 	public function testAwaitMany()
@@ -113,16 +149,17 @@ class TestPromise
 				Assert.equals(0.1, f);
 				Assert.isTrue(b);
 				Assert.isNull(d);
-			});
+			})
+			.lose5().complete();
 	}
 	
 	public function testAlwaysSuccess()
 	{
-		Promise.value(1).always(function() Assert.isTrue(true));
+		Promise.value(1).always(function() Assert.isTrue(true)).lose1().complete();
 	}
 	
 	public function testAlwaysError()
 	{
-		new Deferred().reject(1).always(function() Assert.isTrue(true));
+		new Deferred().reject(1).always(function() Assert.isTrue(true)).lose1().complete();
 	}
 }

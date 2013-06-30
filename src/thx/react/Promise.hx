@@ -141,6 +141,8 @@ class Promise<T>
 				state = newstate;
 			case [Progress(_), Progress(_)]:
 				state = newstate;
+			case [Progress(_), Idle]:
+				state = newstate;
 			case [Success(_), ProgressException(e)]:
 				state = Failure(e);
 			case [_, _]:
@@ -190,6 +192,8 @@ class Promise<T>
 				{
 					progressDispatcher.triggerDynamic(args);
 				}
+				setState(Idle);
+				update();
 			case ProgressException(_):
 				throw "ProgressException state should never be in the poll";
 		}
@@ -346,6 +350,41 @@ class Deferred5<T1, T2, T3, T4, T5> extends BaseDeferred<T1 -> T2 -> T3 -> T4 ->
 // PROMISE HELPERS
 class Promises5
 {
+	public static function lose1<T1, T2, T3, T4, T5>(promise : Promise<T1 -> T2 -> T3 -> T4 -> T5 -> Void>) : Promise<T1 -> T2 -> T3 -> T4 -> Void>
+	{
+		var deferred = new Deferred4();
+		promise.then(function(v1, v2, v3, v4, _) deferred.resolve(v1, v2, v3, v4), deferred.reject);
+		return deferred.promise;
+	}
+	
+	public static function lose2<T1, T2, T3, T4, T5>(promise : Promise<T1 -> T2 -> T3 -> T4 -> T5 -> Void>) : Promise<T1 -> T2 -> T3 -> Void>
+	{
+		var deferred = new Deferred3();
+		promise.then(function(v1, v2, v3, _, _) deferred.resolve(v1, v2, v3), deferred.reject);
+		return deferred.promise;
+	}
+	
+	public static function lose3<T1, T2, T3, T4, T5>(promise : Promise<T1 -> T2 -> T3 -> T4 -> T5 -> Void>) : Promise<T1 -> T2 -> Void>
+	{
+		var deferred = new Deferred2();
+		promise.then(function(v1, v2, _, _, _) deferred.resolve(v1, v2), deferred.reject);
+		return deferred.promise;
+	}
+	
+	public static function lose4<T1, T2, T3, T4, T5>(promise : Promise<T1 -> T2 -> T3 -> T4 -> T5 -> Void>) : Promise<T1 -> Void>
+	{
+		var deferred = new Deferred();
+		promise.then(function(v1, _, _, _, _) deferred.resolve(v1), deferred.reject);
+		return deferred.promise;
+	}
+	
+	public static function lose5<T1, T2, T3, T4, T5>(promise : Promise<T1 -> T2 -> T3 -> T4 -> T5 -> Void>) : Promise<Void -> Void>
+	{
+		var deferred = new Deferred0();
+		promise.then(function(_, _, _, _, _) deferred.resolve(), deferred.reject);
+		return deferred.promise;
+	}
+
 	public static function await0<T1, T2, T3, T4, T5>(promise : Promise<T1 -> T2 -> T3 -> T4 -> T5 -> Void>, other : Promise<Void -> Void>) : Promise<T1 -> T2 -> T3 -> T4 -> T5 -> Void>
 	{
 		var deferred = new Deferred5<T1, T2, T3, T4, T5>();
@@ -383,6 +422,34 @@ class Promises5Pipe
 
 class Promises4
 {
+	public static function lose1<T1, T2, T3, T4>(promise : Promise<T1 -> T2 -> T3 -> T4 -> Void>) : Promise<T1 -> T2 -> T3 -> Void>
+	{
+		var deferred = new Deferred3();
+		promise.then(function(v1, v2, v3, _) deferred.resolve(v1, v2, v3), deferred.reject);
+		return deferred.promise;
+	}
+
+	public static function lose2<T1, T2, T3, T4>(promise : Promise<T1 -> T2 -> T3 -> T4 -> Void>) : Promise<T1 -> T2 -> Void>
+	{
+		var deferred = new Deferred2();
+		promise.then(function(v1, v2, _, _) deferred.resolve(v1, v2), deferred.reject);
+		return deferred.promise;
+	}
+
+	public static function lose3<T1, T2, T3, T4>(promise : Promise<T1 -> T2 -> T3 -> T4 -> Void>) : Promise<T1 -> Void>
+	{
+		var deferred = new Deferred();
+		promise.then(function(v1, _, _, _) deferred.resolve(v1), deferred.reject);
+		return deferred.promise;
+	}
+
+	public static function lose4<T1, T2, T3, T4>(promise : Promise<T1 -> T2 -> T3 -> T4 -> Void>) : Promise<Void -> Void>
+	{
+		var deferred = new Deferred0();
+		promise.then(function(_, _, _, _) deferred.resolve(), deferred.reject);
+		return deferred.promise;
+	}
+
 	public static function await0<T1, T2, T3, T4>(promise : Promise<T1 -> T2 -> T3 -> T4 -> Void>, other : Promise<Void -> Void>) : Promise<T1 -> T2 -> T3 -> T4 -> Void>
 	{
 		var deferred = new Deferred4<T1, T2, T3, T4>();
@@ -434,6 +501,27 @@ class Promises4Pipe
 
 class Promises3
 {
+	public static function lose1<T1, T2, T3>(promise : Promise<T1 -> T2 -> T3 -> Void>) : Promise<T1 -> T2 -> Void>
+	{
+		var deferred = new Deferred2();
+		promise.then(function(v1, v2, _) deferred.resolve(v1, v2), deferred.reject);
+		return deferred.promise;
+	}
+
+	public static function lose2<T1, T2, T3>(promise : Promise<T1 -> T2 -> T3 -> Void>) : Promise<T1 -> Void>
+	{
+		var deferred = new Deferred();
+		promise.then(function(v1, _, _) deferred.resolve(v1), deferred.reject);
+		return deferred.promise;
+	}
+
+	public static function lose3<T1, T2, T3>(promise : Promise<T1 -> T2 -> T3 -> Void>) : Promise<Void -> Void>
+	{
+		var deferred = new Deferred0();
+		promise.then(function(_, _, _) deferred.resolve(), deferred.reject);
+		return deferred.promise;
+	}
+
 	public static function await0<T1, T2, T3>(promise : Promise<T1 -> T2 -> T3 -> Void>, other : Promise<Void -> Void>) : Promise<T1 -> T2 -> T3 -> Void>
 	{
 		var deferred = new Deferred3<T1, T2, T3>();
@@ -496,6 +584,20 @@ class Promises3Pipe
 
 class Promises2
 {
+	public static function lose1<T1, T2>(promise : Promise<T1 -> T2 -> Void>) : Promise<T1 -> Void>
+	{
+		var deferred = new Deferred();
+		promise.then(function(v1, _) deferred.resolve(v1), deferred.reject);
+		return deferred.promise;
+	}
+
+	public static function lose2<T1, T2>(promise : Promise<T1 -> T2 -> Void>) : Promise<Void -> Void>
+	{
+		var deferred = new Deferred0();
+		promise.then(function(_, _) deferred.resolve(), deferred.reject);
+		return deferred.promise;
+	}
+
 	public static function await0<T1, T2>(promise : Promise<T1 -> T2 -> Void>, other : Promise<Void -> Void>) : Promise<T1 -> T2 -> Void>
 	{
 		var deferred = new Deferred2<T1, T2>();
@@ -568,7 +670,17 @@ class Promises2Pipe
 }
 
 class Promises1
-{	
+{
+	public static function lose1<T1>(promise : Promise<T1 -> Void>) : Promise<Void -> Void>
+	{
+		var deferred = new Deferred0();
+		promise.then(function(_) deferred.resolve(), deferred.reject);
+		return deferred.promise;
+	}
+
+	public static function with<T1, T2>(promise : Promise<T1 -> Void>, value : T2) : Promise<T1 -> T2 -> Void>
+		return await(promise, Promise.value(value));
+
 	public static function await0<T1>(promise : Promise<T1 -> Void>, other : Promise<Void -> Void>) : Promise<T1 -> Void>
 	{
 		var deferred = new Deferred<T1>();
@@ -579,9 +691,6 @@ class Promises1
 		});
 		return deferred.promise;
 	}
-
-	public static function with<T1, T2>(promise : Promise<T1 -> Void>, value : T2) : Promise<T1 -> T2 -> Void>
-		return await(promise, Promise.value(value));
 
 	public static function await<T1, T2>(promise : Promise<T1 -> Void>, other : Promise<T2 -> Void>) : Promise<T1 -> T2 -> Void>
 	{
