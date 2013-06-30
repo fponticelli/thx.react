@@ -408,7 +408,7 @@ class Promises5
 		return deferred.promise;
 	}
 
-	public static function pipe<T1, T2, T3, T4, T5, TNew>(promise : Promise<T1 -> T2 -> T3 -> T4 -> T5 -> Void>, success : T1 -> T2 -> T3 -> T4 -> T5 -> TNew) : Promise<TNew -> Void>
+	public static function transform<T1, T2, T3, T4, T5, TNew>(promise : Promise<T1 -> T2 -> T3 -> T4 -> T5 -> Void>, success : T1 -> T2 -> T3 -> T4 -> T5 -> TNew) : Promise<TNew -> Void>
 	{
 		var deferred = new Deferred<TNew>();
 		promise.then(
@@ -417,10 +417,7 @@ class Promises5
 		);
 		return deferred.promise;
 	}
-}
 
-class Promises5Pipe
-{
 	public static function pipe<T1, T2, T3, T4, T5, TNew>(promise : Promise<T1 -> T2 -> T3 -> T4 -> T5 -> Void>, success : T1 -> T2 -> T3 -> T4 -> T5 -> Promise<TNew -> Void>) : Promise<TNew -> Void>
 	{
 		var deferred = new Deferred<TNew>();
@@ -487,7 +484,7 @@ class Promises4
 		return deferred.promise;
 	}
 
-	public static function pipe<T1, T2, T3, T4, TNew>(promise : Promise<T1 -> T2 -> T3 -> T4 -> Void>, success : T1 -> T2 -> T3 -> T4 -> TNew) : Promise<TNew -> Void>
+	public static function transform<T1, T2, T3, T4, TNew>(promise : Promise<T1 -> T2 -> T3 -> T4 -> Void>, success : T1 -> T2 -> T3 -> T4 -> TNew) : Promise<TNew -> Void>
 	{
 		var deferred = new Deferred<TNew>();
 		promise.then(
@@ -496,10 +493,7 @@ class Promises4
 		);
 		return deferred.promise;
 	}
-}
 
-class Promises4Pipe
-{
 	public static function pipe<T1, T2, T3, T4, TNew>(promise : Promise<T1 -> T2 -> T3 -> T4 -> Void>, success : T1 -> T2 -> T3 -> T4 -> Promise<TNew -> Void>) : Promise<TNew -> Void>
 	{
 		var deferred = new Deferred<TNew>();
@@ -570,7 +564,7 @@ class Promises3
 		return deferred.promise;
 	}
 
-	public static function pipe<T1, T2, T3, TNew>(promise : Promise<T1 -> T2 -> T3 -> Void>, success : T1 -> T2 -> T3 -> TNew) : Promise<TNew -> Void>
+	public static function transform<T1, T2, T3, TNew>(promise : Promise<T1 -> T2 -> T3 -> Void>, success : T1 -> T2 -> T3 -> TNew) : Promise<TNew -> Void>
 	{
 		var deferred = new Deferred<TNew>();
 		promise.then(
@@ -579,10 +573,7 @@ class Promises3
 		);
 		return deferred.promise;
 	}
-}
 
-class Promises3Pipe
-{
 	public static function pipe<T1, T2, T3, TNew>(promise : Promise<T1 -> T2 -> T3 -> Void>, success : T1 -> T2 -> T3 -> Promise<TNew -> Void>) : Promise<TNew -> Void>
 	{
 		var deferred = new Deferred<TNew>();
@@ -657,7 +648,7 @@ class Promises2
 		return deferred.promise;
 	}
 
-	public static function pipe<T1, T2, TNew>(promise : Promise<T1 -> T2 -> Void>, success : T1 -> T2 -> TNew) : Promise<TNew -> Void>
+	public static function transform<T1, T2, TNew>(promise : Promise<T1 -> T2 -> Void>, success : T1 -> T2 -> TNew) : Promise<TNew -> Void>
 	{
 		var deferred = new Deferred<TNew>();
 		promise.then(
@@ -666,10 +657,7 @@ class Promises2
 		);
 		return deferred.promise;
 	}
-}
 
-class Promises2Pipe
-{
 	public static function pipe<T1, T2, TNew>(promise : Promise<T1 -> T2 -> Void>, success : T1 -> T2 -> Promise<TNew -> Void>) : Promise<TNew -> Void>
 	{
 		var deferred = new Deferred<TNew>();
@@ -748,7 +736,7 @@ class Promises1
 		return deferred.promise;
 	}
 
-	public static function pipe<T1, TNew>(promise : Promise<T1 -> Void>, success : T1 -> TNew) : Promise<TNew -> Void>
+	public static function transform<T1, TNew>(promise : Promise<T1 -> Void>, success : T1 -> TNew) : Promise<TNew -> Void>
 	{
 		var deferred = new Deferred<TNew>();
 		promise.then(
@@ -757,10 +745,7 @@ class Promises1
 		);
 		return deferred.promise;
 	}
-}
 
-class Promises1Pipe
-{
 	public static function pipe<T1, TNew>(promise : Promise<T1 -> Void>, success : T1 -> Promise<TNew -> Void>) : Promise<TNew -> Void>
 	{
 		var deferred = new Deferred<TNew>();
@@ -843,7 +828,7 @@ class Promises0
 		return deferred.promise;
 	}
 
-	public static function pipe<TNew>(promise : Promise<Void -> Void>, success : Void -> TNew) : Promise<TNew -> Void>
+	public static function transform<TNew>(promise : Promise<Void -> Void>, success : Void -> TNew) : Promise<TNew -> Void>
 	{
 		var deferred = new Deferred<TNew>();
 		promise.then(
@@ -852,10 +837,7 @@ class Promises0
 		);
 		return deferred.promise;
 	}
-}
 
-class Promises0Pipe
-{
 	public static function pipe<TNew>(promise : Promise<Void -> Void>, success : Void -> Promise<TNew -> Void>) : Promise<TNew -> Void>
 	{
 		var deferred = new Deferred<TNew>();
