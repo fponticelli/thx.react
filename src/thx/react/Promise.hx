@@ -139,8 +139,6 @@ class Promise<T>
 		{
 			case [Idle, _]:
 				state = newstate;
-			case [Progress(_), Progress(_)]:
-				state = newstate;
 			case [Progress(_), Idle]:
 				state = newstate;
 			case [Success(_), ProgressException(e)]:
@@ -169,7 +167,6 @@ class Promise<T>
 						Reflect.callMethod(null, handler_always, empty_args);
 				} catch (e : Dynamic) {
 					setState(ProgressException([e]));
-					update();
 				}
 			case Failure(args):
 				if (null != errorDispatcher)
@@ -193,11 +190,9 @@ class Promise<T>
 					progressDispatcher.triggerDynamic(args);
 				}
 				setState(Idle);
-				update();
 			case ProgressException(_):
 				throw "ProgressException state should never be in the poll";
 		}
-		return this;
 	}
 	
 	function getErrorDispatcher()
