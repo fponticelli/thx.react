@@ -149,6 +149,23 @@ class Promise<T>
 		update();
 		return this;
 	}
+
+	function setStateDelayed(newstate : PromiseState)
+	{
+#if (neko || php || cpp)
+		return setState(newstate);
+#elseif nodejs
+		js.Node.setImmediate(function() {
+			setState(newstate);
+		});
+		return this;
+#else
+		haxe.Timer.delay(function() {
+			setState(newstate);
+		}, 0);
+		return this;
+#end
+	}
 	
 	function update()
 	{
@@ -270,11 +287,11 @@ class BaseDeferred<TPromise, TDeferred>
 {
 	public var promise(default, null) : Promise<TPromise>;
 	public function reject<TError>(error : TError)
-		return promise.setState(Failure([error]));
+		return promise.setStateDelayed(Failure([error]));
 
 	public function notify<TProgress>(data : TProgress) : TDeferred
 	{
-		promise.setState(Progress([data]));
+		promise.setStateDelayed(Progress([data]));
 		return cast this;
 	}
 	
@@ -288,7 +305,7 @@ class Deferred0 extends BaseDeferred<Void -> Void, Deferred0>
 		promise = new Promise<Void -> Void>();
 		
 	public function resolve()
-		return promise.setState(Success([]));
+		return promise.setStateDelayed(Success([]));
 }
 
 @:access(thx.react.Promise)
@@ -298,7 +315,7 @@ class Deferred<T1> extends BaseDeferred<T1 -> Void, Deferred<T1>>
 		promise = new Promise<T1 -> Void>();
 		
 	public function resolve(v1 : T1)
-		return promise.setState(Success([v1]));
+		return promise.setStateDelayed(Success([v1]));
 }
 
 @:access(thx.react.Promise)
@@ -308,7 +325,7 @@ class Deferred2<T1, T2> extends BaseDeferred<T1 -> T2 -> Void, Deferred2<T1, T2>
 		promise = new Promise<T1 -> T2 -> Void>();
 		
 	public function resolve(v1 : T1, v2 : T2)
-		return promise.setState(Success([v1, v2]));
+		return promise.setStateDelayed(Success([v1, v2]));
 }
 
 @:access(thx.react.Promise)
@@ -318,7 +335,7 @@ class Deferred3<T1, T2, T3> extends BaseDeferred<T1 -> T2 -> T3 -> Void, Deferre
 		promise = new Promise<T1 -> T2 -> T3 -> Void>();
 		
 	public function resolve(v1 : T1, v2 : T2, v3 : T3)
-		return promise.setState(Success([v1, v2, v3]));
+		return promise.setStateDelayed(Success([v1, v2, v3]));
 }
 
 @:access(thx.react.Promise)
@@ -328,7 +345,7 @@ class Deferred4<T1, T2, T3, T4> extends BaseDeferred<T1 -> T2 -> T3 -> T4 -> Voi
 		promise = new Promise<T1 -> T2 -> T3 -> T4 -> Void>();
 		
 	public function resolve(v1 : T1, v2 : T2, v3 : T3, v4 : T4)
-		return promise.setState(Success([v1, v2, v3, v4]));
+		return promise.setStateDelayed(Success([v1, v2, v3, v4]));
 }
 
 @:access(thx.react.Promise)
@@ -338,7 +355,7 @@ class Deferred5<T1, T2, T3, T4, T5> extends BaseDeferred<T1 -> T2 -> T3 -> T4 ->
 		promise = new Promise<T1 -> T2 -> T3 -> T4 -> T5 -> Void>();
 		
 	public function resolve(v1 : T1, v2 : T2, v3 : T3, v4 : T4, v5 : T5)
-	return promise.setState(Success([v1, v2, v3, v4, v5]));
+	return promise.setStateDelayed(Success([v1, v2, v3, v4, v5]));
 }
 
 

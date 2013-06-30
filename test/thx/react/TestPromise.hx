@@ -13,7 +13,7 @@ using thx.react.TestPromise;
 class TestPromise
 {
 	public function new() { }
-	static function complete(promise : Promise<Void -> Void>)
+	public static function completeTest(promise : Promise<Void -> Void>)
 		promise.always(Assert.createAsync());
 /*
 	static function createAsync()
@@ -39,14 +39,14 @@ class TestPromise
 			Assert.equals(9, counter);	
 		});
 
-		complete(deferred.promise.lose1());
+		deferred.promise.lose1().completeTest();
 	}
 
 	public function testValue()
 	{
 		Promise.value(7).then(function(v) {
 			Assert.equals(7, v);
-		}).lose1().complete();
+		}).lose1().completeTest();
 	}
 
 	public function testFailure()
@@ -57,7 +57,7 @@ class TestPromise
 			.fail(function(e : Int) Assert.fail("this Int error should never occur"))
 			.fail(function(e : String) Assert.equals("error", e));
 		d.reject("error");
-		d.promise.lose1().complete();
+		d.promise.lose1().completeTest();
 	}
 	
 	public function testResolveRejectFirst()
@@ -67,7 +67,7 @@ class TestPromise
 			.then(function(_) Assert.fail("success should never occur"))
 			.fail(function(e : Int) Assert.fail("this Int error should never occur"))
 			.fail(function(e : String) Assert.equals("error", e))
-			.lose1().complete();
+			.lose1().completeTest();
 	}
 
 	public function testProgress()
@@ -90,14 +90,14 @@ class TestPromise
 			.progress(function(e : String) Assert.fail("this Int error should never occur"));
 		d.notify(2).notify(3);
 		d.resolve("A");
-		d.promise.lose1().complete();
+		d.promise.lose1().completeTest();
 	}
 
 	public function testPipe()
 	{
 		Promise.value(1).pipe(function(i : Int) return Promise.value("#" + i))
 			.then(function(s : String) Assert.equals("#1", s))
-			.lose1().complete();
+			.lose1().completeTest();
 	}
 
 	public function testException()
@@ -105,7 +105,7 @@ class TestPromise
 		Promise.value(1)
 			.then(function(i : Int) throw "argh!")
 			.fail(function(e : Dynamic) Assert.equals("argh!", e))
-			.lose1().complete();
+			.lose1().completeTest();
 	}
 	
 	public function testThenFailure()
@@ -116,7 +116,7 @@ class TestPromise
 			function(e : Dynamic) Assert.isTrue(true)
 		);
 		d.reject(1);
-		d.promise.lose1().complete();
+		d.promise.lose1().completeTest();
 	}
 	
 	public function testDeferred2()
@@ -124,7 +124,7 @@ class TestPromise
 		var d = new Deferred2();
 		d.promise.then(function(s : String, i : Int) Assert.equals("Haxe3", s + i));
 		d.resolve("Haxe", 3);
-		d.promise.lose2().complete();
+		d.promise.lose2().completeTest();
 	}
 	
 	public function testAwait()
@@ -135,7 +135,7 @@ class TestPromise
 				Assert.equals(1, v1);
 				Assert.equals("x", v2);
 			})
-			.lose2().complete();
+			.lose2().completeTest();
 	}
 	
 	public function testAwaitMany()
@@ -150,16 +150,16 @@ class TestPromise
 				Assert.isTrue(b);
 				Assert.isNull(d);
 			})
-			.lose5().complete();
+			.lose5().completeTest();
 	}
 	
 	public function testAlwaysSuccess()
 	{
-		Promise.value(1).always(function() Assert.isTrue(true)).lose1().complete();
+		Promise.value(1).always(function() Assert.isTrue(true)).lose1().completeTest();
 	}
 	
 	public function testAlwaysError()
 	{
-		new Deferred().reject(1).always(function() Assert.isTrue(true)).lose1().complete();
+		new Deferred().reject(1).always(function() Assert.isTrue(true)).lose1().completeTest();
 	}
 }

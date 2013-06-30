@@ -6,6 +6,8 @@
 package thx.react;
 
 import utest.Assert;
+using thx.react.TestPromise;
+using thx.react.Promise;
 
 class TestProvider
 {
@@ -14,7 +16,7 @@ class TestProvider
 	public function testDemandProvide()
 	{
 		var provider = new Provider();
-		provider.demand(String).then(function(response : String) Assert.equals("Haxe", response));
+		provider.demand(String).then(function(response : String) Assert.equals("Haxe", response)).lose1().completeTest();
 		provider.provide("Haxe");
 	}
 	
@@ -22,6 +24,6 @@ class TestProvider
 	{
 		var provider = new Provider();
 		provider.provide("Haxe");
-		provider.demand(String).then(function(response : String) Assert.equals("Haxe", response));
+		provider.demand(String).then(function(response : String) Assert.equals("Haxe", response)).lose1().completeTest();
 	}
 }

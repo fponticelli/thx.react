@@ -1,0 +1,9 @@
+-cp src
+-cp test
+-cp ../thx.core/src
+-lib utest
+-lib nodejs
+-js bin/thx.react.node.js
+-D haxe3
+-main TestAll
+-cmd /usr/local/bin/node bin/thx.react.node.js
