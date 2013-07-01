@@ -418,9 +418,59 @@ class Promises5
 		return deferred.promise;
 	}
 
+	public static function pipe0<T1, T2, T3, T4, T5>(promise : Promise<T1 -> T2 -> T3 -> T4 -> T5 -> Void>, success : T1 -> T2 -> T3 -> T4 -> T5 -> Promise<Void -> Void>) : Promise<Void -> Void>
+	{
+		var deferred = new Deferred0();
+		promise.then(
+			function(v1 : T1, v2 : T2, v3 : T3, v4 : T4, v5 : T5) success(v1, v2, v3, v4, v5).then(deferred.resolve),
+			deferred.reject
+		);
+		return deferred.promise;
+	}
+
 	public static function pipe<T1, T2, T3, T4, T5, TNew>(promise : Promise<T1 -> T2 -> T3 -> T4 -> T5 -> Void>, success : T1 -> T2 -> T3 -> T4 -> T5 -> Promise<TNew -> Void>) : Promise<TNew -> Void>
 	{
 		var deferred = new Deferred<TNew>();
+		promise.then(
+			function(v1 : T1, v2 : T2, v3 : T3, v4 : T4, v5 : T5) success(v1, v2, v3, v4, v5).then(deferred.resolve),
+			deferred.reject
+		);
+		return deferred.promise;
+	}
+
+	public static function pipe2<T1, T2, T3, T4, T5, TN1, TN2>(promise : Promise<T1 -> T2 -> T3 -> T4 -> T5 -> Void>, success : T1 -> T2 -> T3 -> T4 -> T5 -> Promise<TN1 -> TN2 -> Void>) : Promise<TN1 -> TN2 -> Void>
+	{
+		var deferred = new Deferred2<TN1, TN2>();
+		promise.then(
+			function(v1 : T1, v2 : T2, v3 : T3, v4 : T4, v5 : T5) success(v1, v2, v3, v4, v5).then(deferred.resolve),
+			deferred.reject
+		);
+		return deferred.promise;
+	}
+
+	public static function pipe3<T1, T2, T3, T4, T5, TN1, TN2, TN3>(promise : Promise<T1 -> T2 -> T3 -> T4 -> T5 -> Void>, success : T1 -> T2 -> T3 -> T4 -> T5 -> Promise<TN1 -> TN2 -> TN3 -> Void>) : Promise<TN1 -> TN2 -> TN3 -> Void>
+	{
+		var deferred = new Deferred3<TN1, TN2, TN3>();
+		promise.then(
+			function(v1 : T1, v2 : T2, v3 : T3, v4 : T4, v5 : T5) success(v1, v2, v3, v4, v5).then(deferred.resolve),
+			deferred.reject
+		);
+		return deferred.promise;
+	}
+
+	public static function pipe4<T1, T2, T3, T4, T5, TN1, TN2, TN3, TN4>(promise : Promise<T1 -> T2 -> T3 -> T4 -> T5 -> Void>, success : T1 -> T2 -> T3 -> T4 -> T5 -> Promise<TN1 -> TN2 -> TN3 -> TN4 -> Void>) : Promise<TN1 -> TN2 -> TN3 -> TN4 -> Void>
+	{
+		var deferred = new Deferred4<TN1, TN2, TN3, TN4>();
+		promise.then(
+			function(v1 : T1, v2 : T2, v3 : T3, v4 : T4, v5 : T5) success(v1, v2, v3, v4, v5).then(deferred.resolve),
+			deferred.reject
+		);
+		return deferred.promise;
+	}
+
+	public static function pipe5<T1, T2, T3, T4, T5, TN1, TN2, TN3, TN4, TN5>(promise : Promise<T1 -> T2 -> T3 -> T4 -> T5 -> Void>, success : T1 -> T2 -> T3 -> T4 -> T5 -> Promise<TN1 -> TN2 -> TN3 -> TN4 -> TN5 -> Void>) : Promise<TN1 -> TN2 -> TN3 -> TN4 -> TN5 -> Void>
+	{
+		var deferred = new Deferred5<TN1, TN2, TN3, TN4, TN5>();
 		promise.then(
 			function(v1 : T1, v2 : T2, v3 : T3, v4 : T4, v5 : T5) success(v1, v2, v3, v4, v5).then(deferred.resolve),
 			deferred.reject
@@ -494,9 +544,59 @@ class Promises4
 		return deferred.promise;
 	}
 
+	public static function pipe0<T1, T2, T3, T4>(promise : Promise<T1 -> T2 -> T3 -> T4 -> Void>, success : T1 -> T2 -> T3 -> T4 -> Promise<Void -> Void>) : Promise<Void -> Void>
+	{
+		var deferred = new Deferred0();
+		promise.then(
+			function(v1 : T1, v2 : T2, v3 : T3, v4 : T4) success(v1, v2, v3, v4).then(deferred.resolve),
+			deferred.reject
+		);
+		return deferred.promise;
+	}
+
 	public static function pipe<T1, T2, T3, T4, TNew>(promise : Promise<T1 -> T2 -> T3 -> T4 -> Void>, success : T1 -> T2 -> T3 -> T4 -> Promise<TNew -> Void>) : Promise<TNew -> Void>
 	{
 		var deferred = new Deferred<TNew>();
+		promise.then(
+			function(v1 : T1, v2 : T2, v3 : T3, v4 : T4) success(v1, v2, v3, v4).then(deferred.resolve),
+			deferred.reject
+		);
+		return deferred.promise;
+	}
+
+	public static function pipe2<T1, T2, T3, T4, TN1, TN2>(promise : Promise<T1 -> T2 -> T3 -> T4 -> Void>, success : T1 -> T2 -> T3 -> T4 -> Promise<TN1 -> TN2 -> Void>) : Promise<TN1 -> TN2 -> Void>
+	{
+		var deferred = new Deferred2<TN1, TN2>();
+		promise.then(
+			function(v1 : T1, v2 : T2, v3 : T3, v4 : T4) success(v1, v2, v3, v4).then(deferred.resolve),
+			deferred.reject
+		);
+		return deferred.promise;
+	}
+
+	public static function pipe3<T1, T2, T3, T4, TN1, TN2, TN3>(promise : Promise<T1 -> T2 -> T3 -> T4 -> Void>, success : T1 -> T2 -> T3 -> T4 -> Promise<TN1 -> TN2 -> TN3 -> Void>) : Promise<TN1 -> TN2 -> TN3 -> Void>
+	{
+		var deferred = new Deferred3<TN1, TN2, TN3>();
+		promise.then(
+			function(v1 : T1, v2 : T2, v3 : T3, v4 : T4) success(v1, v2, v3, v4).then(deferred.resolve),
+			deferred.reject
+		);
+		return deferred.promise;
+	}
+
+	public static function pipe4<T1, T2, T3, T4, TN1, TN2, TN3, TN4>(promise : Promise<T1 -> T2 -> T3 -> T4 -> Void>, success : T1 -> T2 -> T3 -> T4 -> Promise<TN1 -> TN2 -> TN3 -> TN4 -> Void>) : Promise<TN1 -> TN2 -> TN3 -> TN4 -> Void>
+	{
+		var deferred = new Deferred4<TN1, TN2, TN3, TN4>();
+		promise.then(
+			function(v1 : T1, v2 : T2, v3 : T3, v4 : T4) success(v1, v2, v3, v4).then(deferred.resolve),
+			deferred.reject
+		);
+		return deferred.promise;
+	}
+
+	public static function pipe5<T1, T2, T3, T4, TN1, TN2, TN3, TN4, TN5>(promise : Promise<T1 -> T2 -> T3 -> T4 -> Void>, success : T1 -> T2 -> T3 -> T4 -> Promise<TN1 -> TN2 -> TN3 -> TN4 -> TN5 -> Void>) : Promise<TN1 -> TN2 -> TN3 -> TN4 -> TN5 -> Void>
+	{
+		var deferred = new Deferred5<TN1, TN2, TN3, TN4, TN5>();
 		promise.then(
 			function(v1 : T1, v2 : T2, v3 : T3, v4 : T4) success(v1, v2, v3, v4).then(deferred.resolve),
 			deferred.reject
@@ -574,9 +674,59 @@ class Promises3
 		return deferred.promise;
 	}
 
+	public static function pipe0<T1, T2, T3>(promise : Promise<T1 -> T2 -> T3 -> Void>, success : T1 -> T2 -> T3 -> Promise<Void -> Void>) : Promise<Void -> Void>
+	{
+		var deferred = new Deferred0();
+		promise.then(
+			function(v1 : T1, v2 : T2, v3 : T3) success(v1, v2, v3).then(deferred.resolve),
+			deferred.reject
+		);
+		return deferred.promise;
+	}
+
 	public static function pipe<T1, T2, T3, TNew>(promise : Promise<T1 -> T2 -> T3 -> Void>, success : T1 -> T2 -> T3 -> Promise<TNew -> Void>) : Promise<TNew -> Void>
 	{
 		var deferred = new Deferred<TNew>();
+		promise.then(
+			function(v1 : T1, v2 : T2, v3 : T3) success(v1, v2, v3).then(deferred.resolve),
+			deferred.reject
+		);
+		return deferred.promise;
+	}
+
+	public static function pipe2<T1, T2, T3, TN1, TN2>(promise : Promise<T1 -> T2 -> T3 -> Void>, success : T1 -> T2 -> T3 -> Promise<TN1 -> TN2 -> Void>) : Promise<TN1 -> TN2 -> Void>
+	{
+		var deferred = new Deferred2<TN1, TN2>();
+		promise.then(
+			function(v1 : T1, v2 : T2, v3 : T3) success(v1, v2, v3).then(deferred.resolve),
+			deferred.reject
+		);
+		return deferred.promise;
+	}
+
+	public static function pipe3<T1, T2, T3, TN1, TN2, TN3>(promise : Promise<T1 -> T2 -> T3 -> Void>, success : T1 -> T2 -> T3 -> Promise<TN1 -> TN2 -> TN3 -> Void>) : Promise<TN1 -> TN2 -> TN3 -> Void>
+	{
+		var deferred = new Deferred3<TN1, TN2, TN3>();
+		promise.then(
+			function(v1 : T1, v2 : T2, v3 : T3) success(v1, v2, v3).then(deferred.resolve),
+			deferred.reject
+		);
+		return deferred.promise;
+	}
+
+	public static function pipe4<T1, T2, T3, TN1, TN2, TN3, TN4>(promise : Promise<T1 -> T2 -> T3 -> Void>, success : T1 -> T2 -> T3 -> Promise<TN1 -> TN2 -> TN3 -> TN4 -> Void>) : Promise<TN1 -> TN2 -> TN3 -> TN4 -> Void>
+	{
+		var deferred = new Deferred4<TN1, TN2, TN3, TN4>();
+		promise.then(
+			function(v1 : T1, v2 : T2, v3 : T3) success(v1, v2, v3).then(deferred.resolve),
+			deferred.reject
+		);
+		return deferred.promise;
+	}
+
+	public static function pipe5<T1, T2, T3, TN1, TN2, TN3, TN4, TN5>(promise : Promise<T1 -> T2 -> T3 -> Void>, success : T1 -> T2 -> T3 -> Promise<TN1 -> TN2 -> TN3 -> TN4 -> TN5 -> Void>) : Promise<TN1 -> TN2 -> TN3 -> TN4 -> TN5 -> Void>
+	{
+		var deferred = new Deferred5<TN1, TN2, TN3, TN4, TN5>();
 		promise.then(
 			function(v1 : T1, v2 : T2, v3 : T3) success(v1, v2, v3).then(deferred.resolve),
 			deferred.reject
@@ -658,9 +808,59 @@ class Promises2
 		return deferred.promise;
 	}
 
+	public static function pipe0<T1, T2>(promise : Promise<T1 -> T2 -> Void>, success : T1 -> T2 -> Promise<Void -> Void>) : Promise<Void -> Void>
+	{
+		var deferred = new Deferred0();
+		promise.then(
+			function(v1 : T1, v2 : T2) success(v1, v2).then(deferred.resolve),
+			deferred.reject
+		);
+		return deferred.promise;
+	}
+
 	public static function pipe<T1, T2, TNew>(promise : Promise<T1 -> T2 -> Void>, success : T1 -> T2 -> Promise<TNew -> Void>) : Promise<TNew -> Void>
 	{
 		var deferred = new Deferred<TNew>();
+		promise.then(
+			function(v1 : T1, v2 : T2) success(v1, v2).then(deferred.resolve),
+			deferred.reject
+		);
+		return deferred.promise;
+	}
+
+	public static function pipe2<T1, T2, TN1, TN2>(promise : Promise<T1 -> T2 -> Void>, success : T1 -> T2 -> Promise<TN1 -> TN2 -> Void>) : Promise<TN1 -> TN2 -> Void>
+	{
+		var deferred = new Deferred2<TN1, TN2>();
+		promise.then(
+			function(v1 : T1, v2 : T2) success(v1, v2).then(deferred.resolve),
+			deferred.reject
+		);
+		return deferred.promise;
+	}
+
+	public static function pipe3<T1, T2, TN1, TN2, TN3>(promise : Promise<T1 -> T2 -> Void>, success : T1 -> T2 -> Promise<TN1 -> TN2 -> TN3 -> Void>) : Promise<TN1 -> TN2 -> TN3 -> Void>
+	{
+		var deferred = new Deferred3<TN1, TN2, TN3>();
+		promise.then(
+			function(v1 : T1, v2 : T2) success(v1, v2).then(deferred.resolve),
+			deferred.reject
+		);
+		return deferred.promise;
+	}
+
+	public static function pipe4<T1, T2, TN1, TN2, TN3, TN4>(promise : Promise<T1 -> T2 -> Void>, success : T1 -> T2 -> Promise<TN1 -> TN2 -> TN3 -> TN4 -> Void>) : Promise<TN1 -> TN2 -> TN3 -> TN4 -> Void>
+	{
+		var deferred = new Deferred4<TN1, TN2, TN3, TN4>();
+		promise.then(
+			function(v1 : T1, v2 : T2) success(v1, v2).then(deferred.resolve),
+			deferred.reject
+		);
+		return deferred.promise;
+	}
+
+	public static function pipe5<T1, T2, TN1, TN2, TN3, TN4, TN5>(promise : Promise<T1 -> T2 -> Void>, success : T1 -> T2 -> Promise<TN1 -> TN2 -> TN3 -> TN4 -> TN5 -> Void>) : Promise<TN1 -> TN2 -> TN3 -> TN4 -> TN5 -> Void>
+	{
+		var deferred = new Deferred5<TN1, TN2, TN3, TN4, TN5>();
 		promise.then(
 			function(v1 : T1, v2 : T2) success(v1, v2).then(deferred.resolve),
 			deferred.reject
