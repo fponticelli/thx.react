@@ -1,5 +1,4 @@
 /**
- * ...
  * @author Franco Ponticelli
  */
 
@@ -19,7 +18,7 @@ import thx.react.Binder;
 
 class Dispatcher
 {
-	inline static var TYPE_SEPARATOR : String = ";";
+	public inline static var TYPE_SEPARATOR : String = ";";
 
 	#if macro
 	public static function nonOptionalArgumentTypeAsString(fexpr : Expr, index : Int)
