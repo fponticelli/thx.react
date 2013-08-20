@@ -25,7 +25,7 @@ class Buffer
 
 	public function enqueue<T>(value : T)
 	{
-		queueMany([value]);
+		enqueueMany([value]);
 	}
 
 	public function enqueueMany<T>(values : Iterable<T>)
