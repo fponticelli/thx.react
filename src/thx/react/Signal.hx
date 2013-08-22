@@ -2,7 +2,7 @@ package thx.react;
 
 import thx.core.Procedure;
 
-class Signal<T> 
+class Signal<T>
 {
 	private var handlers : Array<Procedure<T>>;
 

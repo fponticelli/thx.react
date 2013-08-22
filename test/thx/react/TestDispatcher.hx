@@ -91,13 +91,13 @@ class TestDispatcher
 			counter += 1;
 		});
 		dispatcher.trigger(new B());
-		Assert.equals(111, counter);
+		Assert.equals(101, counter);
 		dispatcher.trigger(new A());
-		Assert.equals(221, counter);
+		Assert.equals(211, counter);
 		dispatcher.trigger(1);
-		Assert.equals(321, counter);
+		Assert.equals(311, counter);
 	}
-	
+
 	public function testRemoveHandlerFromHandler()
 	{
 		var counter = 0,
@@ -126,11 +126,11 @@ class TestDispatcher
 		dispatcher.on(f2);
 		dispatcher.on(f3);
 		dispatcher.on(f4);
-		
+
 		dispatcher.trigger(1);
 		Assert.equals(7, counter);
 	}
-	
+
 	public function testDoubleTrigger()
 	{
 		var counter = 0,
@@ -159,7 +159,7 @@ class TestDispatcher
 		dispatcher.on(f2);
 		dispatcher.on(f3);
 		dispatcher.on(f4);
-		
+
 		dispatcher.trigger(1);
 		Assert.equals(90, counter);
 	}

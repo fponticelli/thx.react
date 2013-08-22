@@ -108,7 +108,7 @@ class TestBinder
 		binder.dispatch("x i", [null]);
 		Assert.equals(322, counter);
 	}
-	
+
 	public function testRemoveHandlerFromHandler()
 	{
 		var counter = 0,
@@ -137,11 +137,11 @@ class TestBinder
 		binder.bind("i", f2);
 		binder.bind("i", f3);
 		binder.bind("i", f4);
-		
+
 		binder.dispatch("i", [1]);
 		Assert.equals(7, counter);
 	}
-	
+
 	public function testDoubleTrigger()
 	{
 		var counter = 0,
@@ -170,7 +170,7 @@ class TestBinder
 		binder.bind("i", f2);
 		binder.bind("i", f3);
 		binder.bind("i", f4);
-		
+
 		binder.dispatch("i", [1]);
 		Assert.equals(90, counter);
 	}

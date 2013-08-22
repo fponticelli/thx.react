@@ -18,8 +18,7 @@ import thx.react.Binder;
 
 class Dispatcher
 {
-	public inline static var TYPE_SEPARATOR : String = ";";
-
+	public static var TYPE_SEPARATOR = ";";
 	#if macro
 	public static function nonOptionalArgumentTypeAsString(fexpr : Expr, index : Int)
 	{
@@ -28,12 +27,13 @@ class Dispatcher
 			throw "handler argument cannot be optional";
 		return TypeTools.toString(t.getArgumentType(index));
 	}
-	
+
 	public static function argumentTypes(handler : Expr, length : Int)
 	{
-		return [for(i in 0...length) i].map(nonOptionalArgumentTypeAsString.bind(handler, _)).join(TYPE_SEPARATOR);
+		var types = [for(i in 0...length) i].map(nonOptionalArgumentTypeAsString.bind(handler, _)).join(TYPE_SEPARATOR);
+		return types;
 	}
-	
+
 	public static function getArity(handler : Expr)
 	{
 		var arity = Context.typeof(handler).getArity();
@@ -41,40 +41,24 @@ class Dispatcher
 			throw "handler is not a function";
 		return arity;
 	}
-	
-	public static function combinedTypeInheritance(values : Array<Expr>)
+
+	public static function getTypesForExpressions(values : Array<Expr>)
 	{
-		var alltypes = [];
-		for (value in values)
-		{
-			var type = Context.typeof(value),
-				types = type.typeInheritance();
-			if(types[types.length-1] != "Dynamic")
-				types.push("Dynamic");
-			alltypes.push(types);
-		}
-		return thx.core.Arrays.crossMulti(alltypes).map(function(a) return a.join(TYPE_SEPARATOR)).join(Binder.KEY_SEPARATOR);
+		var alltypes = values.map(function(value) return Context.typeof(value).toString());
+		return alltypes.join(TYPE_SEPARATOR);
 	}
 	#end
-	public static function combinedValueTypes(values : Array<Dynamic>)
+	public static function getTypesForValues(values : Array<Dynamic>)
 	{
-		var alltypes = [];
-		for (value in values)
-		{
-			var type = Type.typeof(value),
-				types = type.typeInheritance();
-			if(types[types.length-1] != "Dynamic")
-				types.push("Dynamic");
-			alltypes.push(types);
-		}
-		return thx.core.Arrays.crossMulti(alltypes).map(function(a) return a.join(TYPE_SEPARATOR)).join(Binder.KEY_SEPARATOR);
+		var alltypes = values.map(function(value) return Type.typeof(value).toString());
+		return alltypes.join(TYPE_SEPARATOR);
 	}
-	
+
 	public var binder(default, null) : Binder;
-	
+
 	public function new()
 		binder = new Binder();
-	
+
 	macro public function on(ethis : ExprOf<Dispatcher>, handler : Expr)
 	{
 		var arity = getArity(handler),
@@ -96,9 +80,9 @@ class Dispatcher
 		return macro $ethis.binder.unbind($v{types}, new thx.core.Procedure($handler, $v{arity}));
 	}
 
-	macro public function trigger<T>(ethis : ExprOf<Dispatcher>, values : Array<Expr>)
+	macro public function trigger(ethis : ExprOf<Dispatcher>, values : Array<Expr>)
 	{
-		var types = combinedTypeInheritance(values);
+		var types = getTypesForExpressions(values) + " " + [for(i in 0...values.length) "Dynamic"].join(TYPE_SEPARATOR);
 		return macro $ethis.binder.dispatch($v{types}, $a{values});
 	}
 
@@ -114,7 +98,7 @@ class Dispatcher
 
 	public function triggerDynamic(payloads : Array<Dynamic>)
 	{
-		var names = combinedValueTypes(payloads);
+		var names = getTypesForValues(payloads) + " " + [for(i in 0...payloads.length) "Dynamic"].join(TYPE_SEPARATOR);
 		binder.dispatch(names, payloads);
 	}
 }

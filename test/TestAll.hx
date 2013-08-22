@@ -11,6 +11,8 @@ class TestAll
 		runner.addCase(new thx.react.TestPromise());
 		runner.addCase(new thx.react.TestProvider());
 		runner.addCase(new thx.react.TestResponder());
+		runner.addCase(new thx.react.TestValueBinder());
+		runner.addCase(new thx.react.TestValueDispatcher());
 	}
 
 	public static function main()

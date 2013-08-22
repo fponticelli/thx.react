@@ -10,13 +10,13 @@ using thx.core.Types;
 
 
 // TODO: add dequeue/dequeueMany to process and remove from the buffer
-class Buffer 
+class Buffer
 {
 	var queues : Map<String, Array<Dynamic>>;
 	var consumers : Map<String, Array<{
-		handler : Array<Dynamic> -> Void,
-		pos : Int
-	}>>;
+			handler : Array<Dynamic> -> Void,
+			pos : Int
+		}>>;
 	public function new()
 	{
 		queues = new Map();
@@ -71,7 +71,7 @@ class Buffer
 	macro public function processMany<T>(ethis : ExprOf<Buffer>, handler : Expr)
 	{
 		var name = getArrayArgumentType(handler);
-		return macro $ethis.processImpl($v{name}, $handler);
+		return macro $ethis.processManyImpl($v{name}, $handler);
 	}
 
 	@:noDoc @:noDisplay

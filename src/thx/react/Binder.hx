@@ -11,7 +11,7 @@ class Binder
 	{
 		map = new Map();
 	}
-	
+
 	public function dispatch(names : String, payload: Array<Dynamic>)
 	{
 		var list = null,
@@ -28,10 +28,10 @@ class Binder
 			}
 		} catch (e : Propagation) { }
 	}
-	
+
 	public function bind<T>(names : String, handler : Procedure<T>)
 	{
-		for (name in names.split(KEY_SEPARATOR)) 
+		for (name in names.split(KEY_SEPARATOR))
 		{
 			var binds = map.get(name);
 			if (null == binds)
@@ -39,7 +39,7 @@ class Binder
 			binds.add(handler);
 		}
 	}
-	
+
 	public function bindOne<T>(names : String, handler : Procedure<T>)
 	{
 		var p : Procedure<T> = null;
@@ -49,10 +49,10 @@ class Binder
 		}), handler.getArity());
 		bind(names, p);
 	}
-	
+
 	public function unbind<T>(names : String, ?handler : Procedure<T>)
 	{
-		for (name in names.split(KEY_SEPARATOR)) 
+		for (name in names.split(KEY_SEPARATOR))
 		{
 			if (null == untyped handler) // horrible fix for problem introduced with RC2
 				map.remove(name);

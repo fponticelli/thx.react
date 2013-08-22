@@ -18,11 +18,18 @@ class TestBuffer
 	public function testBasics()
 	{
 		var buffer = new Buffer();
-		buffer.queue(new Message(0));
-		buffer.queueMany([new Message(1), new Message(2)]);
+		buffer.enqueue(new Message(0));
+		buffer.enqueueMany([new Message(1), new Message(2)]);
 
 		var invoke = 0;
-		buffer.consume(function(arr : Array<Message>) {
+		var stop = Assert.createAsync();
+		buffer.process(function(msg : Message) {
+			if(invoke == 1)
+			{
+				Assert.equals(3, msg.counter);
+			}
+		});
+		buffer.processMany(function(arr : Array<Message>) {
 			if(invoke == 0)
 			{
 				Assert.equals(0, arr[0].counter);
@@ -30,14 +37,13 @@ class TestBuffer
 				Assert.equals(2, arr[2].counter);
 			} else if(invoke == 1) {
 				Assert.equals(3, arr[0].counter);
+				stop();
 			} else {
-				Assert.fail("consume should be invoked only twice");
+				Assert.fail("process should be invoked only twice");
 			}
 			invoke++;
 		});
-		buffer.queue(new Message(3));
-		if(invoke == 0)
-			Assert.fail("consume never triggered");
+		buffer.enqueue(new Message(3));
 	}
 }
 

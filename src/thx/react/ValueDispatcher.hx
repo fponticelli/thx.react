@@ -6,12 +6,14 @@
 package thx.react;
 
 import haxe.ds.StringMap;
+import haxe.ds.Option;
 
 #if macro
 import haxe.macro.Expr;
 import haxe.macro.TypeTools;
 import haxe.macro.Context;
 using thx.macro.MacroTypes;
+import haxe.macro.Type.ClassType;
 #end
 
 using thx.core.Types;
@@ -20,23 +22,46 @@ import thx.react.Binder;
 class ValueDispatcher
 {
 #if macro
+	public static function getTypeForExpression(value : Expr)
+	{
+		var t = Context.typeof(value);
+		return TypeTools.toString(t);
+	}
+/*
 	public static function typeInheritance(value : Expr)
 	{
 		var type = Context.typeof(value),
 			types = type.typeInheritance();
 		if(types[types.length-1] != "Dynamic")
 			types.push("Dynamic");
-		return types.join(TYPE_SEPARATOR);
+		return types.join(Dispatcher.TYPE_SEPARATOR);
 	}
 
-	public static function typeInheritanceFromClass(cls : Expr)
+	public static function typeInheritanceFromClass(cls : ClassType)
 	{
-		var types = cls.typeInheritance();
+		var types = cls.classInheritance();
 		if(types[types.length-1] != "Dynamic")
 			types.push("Dynamic");
-		return types.join(TYPE_SEPARATOR);
+		return types.join(Dispatcher.TYPE_SEPARATOR);
+	}
+
+	public static function typeFromClass(cls : ClassType)
+	{
+		return cls.pack.copy().concat([cls.name]).join(".");
+	}
+*/
+	public static function getTypeFromClassExpression(cls : ExprOf<Class<Dynamic>>)
+	{
+		return switch(cls.expr) {
+			case EConst(CIdent(s)):
+				return s;
+			case x:
+				trace(x);
+				return throw "type must be a type identifier";
+		};
 	}
 #end
+/*
 	public static function valueTypes(value : Dynamic)
 	{
 		var type  = Type.typeof(value),
@@ -45,40 +70,40 @@ class ValueDispatcher
 			types.push("Dynamic");
 		return types.join(Dispatcher.TYPE_SEPARATOR);
 	}
-	
+*/
 	public var binder(default, null) : ValueBinder;
-	
+
 	public function new()
 		binder = new ValueBinder();
-	
-	macro public function on<T>(ethis : ExprOf<Dispatcher>, handler : ExprOf<T -> Void>)
+
+	macro public function on<T>(ethis : ExprOf<Dispatcher>, handler : ExprOf<Option<T> -> Void>)
 	{
-		var types = Dispatcher.argumentTypes(handler, 1);
-		return macro $ethis.binder.bind($v{types}, $handler);
+		var type = Dispatcher.argumentTypes(handler, 1);
+		return macro $ethis.binder.bind($v{type}, $handler);
 	}
 
-	macro public function one<T>(ethis : ExprOf<Dispatcher>, handler : ExprOf<T -> Void>)
+	macro public function one<T>(ethis : ExprOf<Dispatcher>, handler : ExprOf<Option<T> -> Void>)
 	{
-		var types = Dispatcher.argumentTypes(handler, 1);
-		return macro $ethis.binder.bindOne($v{types}, $handler);
+		var type = Dispatcher.argumentTypes(handler, 1);
+		return macro $ethis.binder.bindOne($v{type}, $handler);
 	}
 
-	macro public function off<T>(ethis : ExprOf<Dispatcher>, handler : ExprOf<T -> Void>)
+	macro public function off<T>(ethis : ExprOf<Dispatcher>, handler : ExprOf<Option<T> -> Void>)
 	{
-		var types = Dispatcher.argumentTypes(handler, 1);
-		return macro $ethis.binder.unbind($v{types}, $handler);
+		var type = Dispatcher.argumentTypes(handler, 1);
+		return macro $ethis.binder.unbind($v{type}, $handler);
 	}
 
-	macro public function triggerNone<T>(ethis : ExprOf<Dispatcher>, type : Class<Dynamic>)
+	macro public function triggerNone<T>(ethis : ExprOf<Dispatcher>, cls : ExprOf<Class<Dynamic>>)
 	{
-		var types = typeInheritanceFromClass(type);
-		return macro $ethis.binder.dispatchNone($v{types});
+		var type = 'haxe.ds.Option<${getTypeFromClassExpression(cls)}> haxe.ds.Option<Dynamic>';
+		return macro $ethis.binder.dispatchNone($v{type});
 	}
 
 	macro public function triggerSome<T>(ethis : ExprOf<Dispatcher>, value : Expr)
 	{
-		var types = typeInheritance(value);
-		return macro $ethis.binder.dispatchSome($v{types}, $v{value});
+		var type = 'haxe.ds.Option<${getTypeForExpression(value)}> haxe.ds.Option<Dynamic>';
+		return macro $ethis.binder.dispatchSome($v{type}, $value);
 	}
 
 	public function clear(?type : Class<Dynamic>, ?name : String)

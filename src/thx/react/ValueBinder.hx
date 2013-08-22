@@ -12,7 +12,7 @@ class ValueBinder
 		map    = new Map();
 		values = new Map<String, Dynamic>();
 	}
-	
+
 	public function dispatchSome(names : String, payload: Dynamic)
 	{
 		if(null == payload)
@@ -46,10 +46,10 @@ class ValueBinder
 			}
 		} catch (e : Propagation) { }
 	}
-	
+
 	public function bind<T>(names : String, handler : Option<T> -> Void)
 	{
-		for (name in names.split(KEY_SEPARATOR)) 
+		for (name in names.split(KEY_SEPARATOR))
 		{
 			var binds = map.get(name),
 				value = values.get(name);
@@ -59,7 +59,7 @@ class ValueBinder
 			handler(null == value ? None : Some(value));
 		}
 	}
-	
+
 	public function bindOne<T>(names : String, handler : Option<T> -> Void)
 	{
 		var p = null;
@@ -69,10 +69,10 @@ class ValueBinder
 		};
 		bind(names, p);
 	}
-	
+
 	public function unbind<T>(names : String, ?handler : Option<T> -> Void)
 	{
-		for (name in names.split(KEY_SEPARATOR)) 
+		for (name in names.split(KEY_SEPARATOR))
 		{
 			if (null == untyped handler) // horrible fix for problem introduced with RC2
 				map.remove(name);
