@@ -11,24 +11,24 @@ class Signal<T>
 		handlers = new Array();
 	}
 
-	public dynamic function on(h : Procedure<T>) : Procedure<T>
+	public dynamic function add(h : Procedure<T>) : Procedure<T>
 	{
 		handlers.push(h);
 		return h;
 	}
 
-	public function one(h : Procedure<T>) : Procedure<T>
+	public function listenOnce(h : Procedure<T>) : Procedure<T>
 	{
 		var p : Procedure<T> = null;
 		p = new Procedure(Reflect.makeVarArgs(function(args : Array<Dynamic>) {
-			off(p);
+			remove(p);
 			h.apply(args);
 		}), h.getArity());
-		on(p);
+		add(p);
 		return p;
 	}
 
-	public function off(h : Procedure<T>) : Bool
+	public function remove(h : Procedure<T>) : Bool
 	{
 		for(i in 0...handlers.length)
 			if(Reflect.compareMethods(handlers[i], h)) {

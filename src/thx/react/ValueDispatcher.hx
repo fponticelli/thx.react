@@ -27,29 +27,7 @@ class ValueDispatcher
 		var t = Context.typeof(value);
 		return TypeTools.toString(t);
 	}
-/*
-	public static function typeInheritance(value : Expr)
-	{
-		var type = Context.typeof(value),
-			types = type.typeInheritance();
-		if(types[types.length-1] != "Dynamic")
-			types.push("Dynamic");
-		return types.join(Dispatcher.TYPE_SEPARATOR);
-	}
 
-	public static function typeInheritanceFromClass(cls : ClassType)
-	{
-		var types = cls.classInheritance();
-		if(types[types.length-1] != "Dynamic")
-			types.push("Dynamic");
-		return types.join(Dispatcher.TYPE_SEPARATOR);
-	}
-
-	public static function typeFromClass(cls : ClassType)
-	{
-		return cls.pack.copy().concat([cls.name]).join(".");
-	}
-*/
 	public static function getTypeFromClassExpression(cls : ExprOf<Class<Dynamic>>)
 	{
 		return switch(cls.expr) {
@@ -61,16 +39,7 @@ class ValueDispatcher
 		};
 	}
 #end
-/*
-	public static function valueTypes(value : Dynamic)
-	{
-		var type  = Type.typeof(value),
-			types = type.typeInheritance();
-		if(types[types.length-1] != "Dynamic")
-			types.push("Dynamic");
-		return types.join(Dispatcher.TYPE_SEPARATOR);
-	}
-*/
+
 	public var binder(default, null) : ValueBinder;
 
 	public function new()
