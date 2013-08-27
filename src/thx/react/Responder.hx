@@ -20,7 +20,7 @@ class Responder
 	static inline var SEPARATOR : String = ":";
 	var respondersMap : Map<String, Array<Dynamic -> Null<Promise<Dynamic>>>>;
 	var requestsMap : Map<String, Array<{ deferred : Deferred<Dynamic>, payload : Dynamic }>>;
-	public function new() 
+	public function new()
 	{
 		respondersMap = new Map();
 		requestsMap   = new Map();
@@ -45,7 +45,7 @@ class Responder
 		return macro $ethis.request_impl($v{request}, $v{response}, $payload);
 	}
 */
-	
+
 	@:noCompletion @:noDoc
 	public function request_impl<TResponse>(requestType : String, responseType : String, payload : Dynamic) : Promise<TResponse -> Void>
 	{
@@ -58,14 +58,14 @@ class Responder
 		update(requestType, responseType);
 		return deferred.promise;
 	}
-	
+
 	public function respond<TRequest, TResponse>(handler : TRequest -> Null<Promise<TResponse -> Void>>, requestType : Class<TRequest>, responseType : Class<TResponse>)
 	{
 		var request  = requestType.toString(),
 			response = responseType.toString();
 		return respond_impl(request, response, handler);
 	}
-	
+
 	@:noCompletion @:noDoc
 	public function respond_impl<TResponse>(requestType : String, responseType : String, handler : Dynamic -> Null<Promise<TResponse -> Void>>)
 	{
@@ -76,7 +76,7 @@ class Responder
 		arr.push(handler);
 		update(requestType, responseType);
 	}
-	
+
 	function update(requestType : String, responseType : String)
 	{
 		var key        = getKey(requestType, responseType),
@@ -84,7 +84,7 @@ class Responder
 			responders = respondersMap.get(key);
 		if (null == requests || null == responders)
 			return;
-		
+
 		var i = requests.length;
 		while(--i >= 0)
 		{
@@ -107,14 +107,14 @@ class Responder
 			}
 		}
 	}
-	
+
 	function getKey(requestType : String, responseType : String) return '$requestType$SEPARATOR$responseType';
 /*
   .request<TRequest, TResponse>(payload : TRequest) : Promise<TResponse>
   .respond<TRequest, TResponse>(handler : TRequest -> Null<Promise<TResponse>>) : Void
 
   .filterRequest<TIn, TOut>(payload : TIn) : Promise<TOut>
-  .filterResponse<TIn, TOut>(data : TIn) : Promise<TOut> 
+  .filterResponse<TIn, TOut>(data : TIn) : Promise<TOut>
 */
-	
+
 }

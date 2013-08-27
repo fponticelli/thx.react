@@ -11,7 +11,7 @@ import thx.react.Promise;
 class Provider
 {
 	var providers : Map<String, { deferred : Deferred<Dynamic>, fullfiller : Void -> Void, demanded : Bool }>;
-	public function new() 
+	public function new()
 	{
 		providers = new Map();
 	}
@@ -21,11 +21,11 @@ class Provider
 		var provider = getProvider(type.toString());
 		if(!provider.demanded && null != provider.fullfiller)
 			provider.fullfiller();
-		
+
 		provider.demanded = true;
 		return cast provider.deferred.promise;
 	}
-	
+
 	public function provide<T>(data : T)
 	{
 		provideImpl(Type.typeof(data).toString(), function(d) d.resolve(data));
@@ -48,7 +48,7 @@ class Provider
 		if(provider.demanded)
 			provider.fullfiller();
 	}
-	
+
 	function getProvider(type : String)
 	{
 		var provider = providers.get(type);

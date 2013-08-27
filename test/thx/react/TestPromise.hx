@@ -59,7 +59,32 @@ class TestPromise
 		d.reject("error");
 		d.promise.lose1().completeTest();
 	}
-	
+
+	public function testPipeFailure()
+	{
+		var complete = Assert.createAsync(),
+			deferred = new Deferred(),
+			p1 = deferred.promise,
+			p2 = p1.pipe0(function(_) {
+				return Promise.value0();
+			});
+		p1.fail(function(_ : Int) {
+trace("!!!! FAIL 2");
+			Assert.isTrue(true);
+			complete();
+		});
+		p2.fail(function(_ : Dynamic) {
+trace("!!!! FAIL");
+			Assert.isTrue(true);
+			complete();
+		});
+#if (js || flash)
+		haxe.Timer.delay(deferred.reject.bind("error"), 100);
+#else
+		deferred.reject("error");
+#end
+	}
+
 	public function testResolveRejectFirst()
 	{
 		new Deferred()

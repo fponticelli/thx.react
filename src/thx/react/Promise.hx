@@ -87,7 +87,7 @@ class Promise<T>
 	}
 	public inline static function value5<T1, T2, T3, T4, T5>(v1 : T1, v2 : T2, v3 : T3, v4 : T4, v5 : T5) : Promise<T1 -> T2 -> T3 -> T4 -> T5 -> Void>
 		return new Deferred5().resolve(v1, v2, v3, v4, v5);
-		
+
 	var handlers_succcess : Array<ProcedureDef<T>>;
 	var handlers_always : Array<Void -> Void>;
 	var state : PromiseState;
@@ -99,24 +99,24 @@ class Promise<T>
 		this.handlers_succcess = [];
 		this.handlers_always = [];
 	}
-	
+
 	public function isResolved()
 		return switch(state)
 		{
 			case Success(_): true;
 			case _: false;
 		}
-	
+
 	public function isFailure()
 		return switch(state)
 		{
 			case Failure(_), ProgressException(_): true;
 			case _: false;
 		}
-		
+
 	public function isComplete()
 		return isResolved() || isFailure();
-	
+
 	public function then(success : ProcedureDef<T>, ?failure : Dynamic -> Void)
 	{
 		handlers_succcess.push(success);
@@ -125,7 +125,7 @@ class Promise<T>
 		update();
 		return this;
 	}
-	
+
 	public function always(handler : Void -> Void)
 	{
 		handlers_always.push(handler);
@@ -166,7 +166,7 @@ class Promise<T>
 		return this;
 #end
 	}
-	
+
 	function update()
 	{
 		switch(state)
@@ -211,19 +211,19 @@ class Promise<T>
 				throw "ProgressException state should never be in the poll";
 		}
 	}
-	
+
 	function getErrorDispatcher()
 	{
 		if (null == errorDispatcher) errorDispatcher = new Dispatcher();
 		return errorDispatcher;
 	}
-	
+
 	function getProgressDispatcher()
 	{
 		if (null == progressDispatcher) progressDispatcher = new Dispatcher();
 		return progressDispatcher;
 	}
-	
+
 	@:noCompletion @:noDoc
 	public function fail_impl(names : String, handler : Dynamic) : Promise<T>
 	{
@@ -231,7 +231,7 @@ class Promise<T>
 		update();
 		return this;
 	}
-	
+
 	@:noCompletion @:noDoc
 	public function progress_impl(names : String, handler : Dynamic) : Promise<T>
 	{
@@ -239,14 +239,14 @@ class Promise<T>
 		update();
 		return this;
 	}
-	
+
 	macro public function fail<TPromise>(ethis : ExprOf<Promise<TPromise>>, handler : Expr) : ExprOf<Promise<TPromise>>
 	{
 		var arity = Dispatcher.getArity(handler),
 			types = Dispatcher.argumentTypes(handler, arity);
 		return macro $ethis.fail_impl($v{types}, new thx.core.Procedure($handler, $v{arity}));
 	}
-	
+
 	macro public function progress<TPromise>(ethis : ExprOf<Promise<TPromise>>, handler : Expr)
 	{
 		var arity = Dispatcher.getArity(handler),
@@ -287,25 +287,29 @@ class BaseDeferred<TPromise, TDeferred>
 {
 	public var promise(default, null) : Promise<TPromise>;
 	public function reject<TError>(error : TError)
+	{
 		return promise.setStateDelayed(Failure([error]));
+	}
 
 	public function notify<TProgress>(data : TProgress) : TDeferred
 	{
 		promise.setStateDelayed(Progress([data]));
 		return cast this;
 	}
-	
+
 	public function toString() return '${Type.getClassName(Type.getClass(this)).split(".").pop()} with $promise';
 }
 
 @:access(thx.react.Promise)
 class Deferred0 extends BaseDeferred<Void -> Void, Deferred0>
-{	
+{
 	public function new()
 		promise = new Promise<Void -> Void>();
-		
+
 	public function resolve()
+	{
 		return promise.setStateDelayed(Success([]));
+	}
 }
 
 @:access(thx.react.Promise)
@@ -313,9 +317,11 @@ class Deferred<T1> extends BaseDeferred<T1 -> Void, Deferred<T1>>
 {
 	public function new()
 		promise = new Promise<T1 -> Void>();
-		
+
 	public function resolve(v1 : T1)
+	{
 		return promise.setStateDelayed(Success([v1]));
+	}
 }
 
 @:access(thx.react.Promise)
@@ -323,7 +329,7 @@ class Deferred2<T1, T2> extends BaseDeferred<T1 -> T2 -> Void, Deferred2<T1, T2>
 {
 	public function new()
 		promise = new Promise<T1 -> T2 -> Void>();
-		
+
 	public function resolve(v1 : T1, v2 : T2)
 		return promise.setStateDelayed(Success([v1, v2]));
 }
@@ -333,17 +339,17 @@ class Deferred3<T1, T2, T3> extends BaseDeferred<T1 -> T2 -> T3 -> Void, Deferre
 {
 	public function new()
 		promise = new Promise<T1 -> T2 -> T3 -> Void>();
-		
+
 	public function resolve(v1 : T1, v2 : T2, v3 : T3)
 		return promise.setStateDelayed(Success([v1, v2, v3]));
 }
 
 @:access(thx.react.Promise)
 class Deferred4<T1, T2, T3, T4> extends BaseDeferred<T1 -> T2 -> T3 -> T4 -> Void, Deferred4<T1, T2, T3, T4>>
-{	
+{
 	public function new()
 		promise = new Promise<T1 -> T2 -> T3 -> T4 -> Void>();
-		
+
 	public function resolve(v1 : T1, v2 : T2, v3 : T3, v4 : T4)
 		return promise.setStateDelayed(Success([v1, v2, v3, v4]));
 }
@@ -353,7 +359,7 @@ class Deferred5<T1, T2, T3, T4, T5> extends BaseDeferred<T1 -> T2 -> T3 -> T4 ->
 {
 	public function new()
 		promise = new Promise<T1 -> T2 -> T3 -> T4 -> T5 -> Void>();
-		
+
 	public function resolve(v1 : T1, v2 : T2, v3 : T3, v4 : T4, v5 : T5)
 	return promise.setStateDelayed(Success([v1, v2, v3, v4, v5]));
 }
@@ -368,28 +374,28 @@ class Promises5
 		promise.then(function(v1, v2, v3, v4, _) deferred.resolve(v1, v2, v3, v4), deferred.reject);
 		return deferred.promise;
 	}
-	
+
 	public static function lose2<T1, T2, T3, T4, T5>(promise : Promise<T1 -> T2 -> T3 -> T4 -> T5 -> Void>) : Promise<T1 -> T2 -> T3 -> Void>
 	{
 		var deferred = new Deferred3();
 		promise.then(function(v1, v2, v3, _, _) deferred.resolve(v1, v2, v3), deferred.reject);
 		return deferred.promise;
 	}
-	
+
 	public static function lose3<T1, T2, T3, T4, T5>(promise : Promise<T1 -> T2 -> T3 -> T4 -> T5 -> Void>) : Promise<T1 -> T2 -> Void>
 	{
 		var deferred = new Deferred2();
 		promise.then(function(v1, v2, _, _, _) deferred.resolve(v1, v2), deferred.reject);
 		return deferred.promise;
 	}
-	
+
 	public static function lose4<T1, T2, T3, T4, T5>(promise : Promise<T1 -> T2 -> T3 -> T4 -> T5 -> Void>) : Promise<T1 -> Void>
 	{
 		var deferred = new Deferred();
 		promise.then(function(v1, _, _, _, _) deferred.resolve(v1), deferred.reject);
 		return deferred.promise;
 	}
-	
+
 	public static function lose5<T1, T2, T3, T4, T5>(promise : Promise<T1 -> T2 -> T3 -> T4 -> T5 -> Void>) : Promise<Void -> Void>
 	{
 		var deferred = new Deferred0();
@@ -1034,7 +1040,7 @@ class Promises0
 			});
 		});
 		return deferred.promise;
-	}	
+	}
 
 	public static function await2<T1, T2>(promise : Promise<Void -> Void>, other : Promise<T1 -> T2 -> Void>) : Promise<T1 -> T2 -> Void>
 	{

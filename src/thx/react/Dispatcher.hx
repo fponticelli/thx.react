@@ -11,6 +11,7 @@ import haxe.macro.Expr;
 import haxe.macro.TypeTools;
 import haxe.macro.Context;
 using thx.macro.MacroTypes;
+using StringTools;
 #end
 
 using thx.core.Types;
@@ -30,7 +31,10 @@ class Dispatcher
 
 	public static function argumentTypes(handler : Expr, length : Int)
 	{
-		var types = [for(i in 0...length) i].map(nonOptionalArgumentTypeAsString.bind(handler, _)).join(TYPE_SEPARATOR);
+		var types = [for(i in 0...length) i]
+						.map(nonOptionalArgumentTypeAsString.bind(handler, _))
+						.filter(function(t : String) return !t.startsWith("Unknown<"))
+						.join(TYPE_SEPARATOR);
 		return types;
 	}
 
@@ -82,7 +86,10 @@ class Dispatcher
 
 	macro public function trigger(ethis : ExprOf<Dispatcher>, values : Array<Expr>)
 	{
-		var types = getTypesForExpressions(values) + " " + [for(i in 0...values.length) "Dynamic"].join(TYPE_SEPARATOR);
+		var types = getTypesForExpressions(values),
+			additional = [for(i in 0...values.length) "Dynamic"].join(TYPE_SEPARATOR);
+		if(types != additional)
+			types += ' $additional';
 		return macro $ethis.binder.dispatch($v{types}, $a{values});
 	}
 
@@ -98,7 +105,10 @@ class Dispatcher
 
 	public function triggerDynamic(payloads : Array<Dynamic>)
 	{
-		var names = getTypesForValues(payloads) + " " + [for(i in 0...payloads.length) "Dynamic"].join(TYPE_SEPARATOR);
+		var names = getTypesForValues(payloads),
+			additional = [for(i in 0...payloads.length) "Dynamic"].join(TYPE_SEPARATOR);
+		if(names != additional)
+			names += ' $additional';
 		binder.dispatch(names, payloads);
 	}
 }
