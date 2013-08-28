@@ -2,9 +2,10 @@ package thx.react;
 
 import thx.core.Procedure;
 
-class Signal<T>
+class ValueSignal<T>
 {
 	private var handlers : Array<Procedure<T>>;
+	private var values : Array<Dynamic>;
 
 	function new()
 	{
@@ -14,6 +15,8 @@ class Signal<T>
 	public function add(h : Procedure<T>) : Procedure<T>
 	{
 		handlers.push(h);
+		if(values != null)
+			h.apply(values);
 		return h;
 	}
 
@@ -43,6 +46,7 @@ class Signal<T>
 
 	function triggerImpl(values : Array<Dynamic>)
 	{
+		this.values = values;
 		// prevents problems with self removing events
 		var list = handlers.copy();
 		for(l in list)
@@ -62,15 +66,7 @@ class Signal<T>
 	}
 }
 
-class Signal0 extends Signal<Void -> Void>
-{
-	public function new()
-		super();
-	public function trigger()
-		triggerImpl([]);
-}
-
-class Signal1<T> extends Signal<T -> Void>
+class ValueSignal1<T> extends ValueSignal<T -> Void>
 {
 	public function new()
 		super();
@@ -78,7 +74,7 @@ class Signal1<T> extends Signal<T -> Void>
 		triggerImpl([v]);
 }
 
-class Signal2<T1, T2> extends Signal<T1 -> T2 -> Void>
+class ValueSignal2<T1, T2> extends ValueSignal<T1 -> T2 -> Void>
 {
 	public function new()
 		super();
@@ -86,7 +82,7 @@ class Signal2<T1, T2> extends Signal<T1 -> T2 -> Void>
 		triggerImpl([v1, v2]);
 }
 
-class Signal3<T1, T2, T3> extends Signal<T1 -> T2 -> T3 -> Void>
+class ValueSignal3<T1, T2, T3> extends ValueSignal<T1 -> T2 -> T3 -> Void>
 {
 	public function new()
 		super();
@@ -94,7 +90,7 @@ class Signal3<T1, T2, T3> extends Signal<T1 -> T2 -> T3 -> Void>
 		triggerImpl([v1, v2, v3]);
 }
 
-class Signal4<T1, T2, T3, T4> extends Signal<T1 -> T2 -> T3 -> T4 -> Void>
+class ValueSignal4<T1, T2, T3, T4> extends ValueSignal<T1 -> T2 -> T3 -> T4 -> Void>
 {
 	public function new()
 		super();
@@ -102,7 +98,7 @@ class Signal4<T1, T2, T3, T4> extends Signal<T1 -> T2 -> T3 -> T4 -> Void>
 		triggerImpl([v1, v2, v3, v4]);
 }
 
-class Signal5<T1, T2, T3, T4, T5> extends Signal<T1 -> T2 -> T3 -> T4 -> T5 -> Void>
+class ValueSignal5<T1, T2, T3, T4, T5> extends ValueSignal<T1 -> T2 -> T3 -> T4 -> T5 -> Void>
 {
 	public function new()
 		super();
