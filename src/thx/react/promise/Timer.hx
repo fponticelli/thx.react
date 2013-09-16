@@ -2,7 +2,7 @@ package thx.react.promise;
 
 import thx.react.Promise;
 
-class Timer 
+class Timer
 {
 	public static function delay(millis : Int) : Promise<Void -> Void>
 	{

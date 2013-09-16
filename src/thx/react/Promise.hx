@@ -155,9 +155,9 @@ class Promise<T>
 #if (neko || php || cpp)
 		return setState(newstate);
 #elseif nodejs
-		js.Node.setImmediate(function() {
+		js.Node.setTimeout(function() {
 			setState(newstate);
-		});
+		}, 0);
 		return this;
 #else
 		haxe.Timer.delay(function() {

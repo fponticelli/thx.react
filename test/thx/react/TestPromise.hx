@@ -69,12 +69,10 @@ class TestPromise
 				return Promise.value0();
 			});
 		p1.fail(function(_ : Int) {
-trace("!!!! FAIL 2");
 			Assert.isTrue(true);
 			complete();
 		});
 		p2.fail(function(_ : Dynamic) {
-trace("!!!! FAIL");
 			Assert.isTrue(true);
 			complete();
 		});

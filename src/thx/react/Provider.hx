@@ -10,7 +10,7 @@ import thx.react.Promise;
 
 class Provider
 {
-	var providers : Map<String, { deferred : Deferred<Dynamic>, fullfiller : Void -> Void, demanded : Bool }>;
+	var providers : Map<String, { fullfiller : Void -> Promise<Dynamic->Void>, demands : Array<Deferred<Dynamic>> }>;
 	public function new()
 	{
 		providers = new Map();
@@ -19,41 +19,49 @@ class Provider
 	public function demand<T>(type : Class<T>) : Promise<T -> Void>
 	{
 		var provider = getProvider(type.toString());
-		if(!provider.demanded && null != provider.fullfiller)
-			provider.fullfiller();
 
-		provider.demanded = true;
-		return cast provider.deferred.promise;
+		if(null == provider.fullfiller)
+		{
+			var deferred = new Deferred<T>();
+			provider.demands.push(deferred);
+			return deferred.promise;
+		} else {
+			return cast provider.fullfiller();
+		}
+
 	}
 
 	public function provide<T>(data : T)
 	{
-		provideImpl(Type.typeof(data).toString(), function(d) d.resolve(data));
+		var promise = Promise.value(data);
+		provideImpl(Type.typeof(data).toString(), function() return promise);
 		return this;
 	}
 
-	public function provideLazy<T>(type : Class<T>, handler : Deferred<T> -> Void)
+	public function provideInstance<T>(type : Class<T>, builder :  Void -> Promise<T -> Void>)
 	{
-		provideImpl(type.toString(), cast handler);
+		provideImpl(type.toString(), builder);
 		return this;
 	}
 
-	function provideImpl(type : String, handler : Deferred<Dynamic> -> Void)
+	function provideImpl<T>(name : String, impl : Void -> Promise<T -> Void>)
 	{
-		var name = type.toString(),
-			provider = getProvider(name);
+		var provider = getProvider(name);
 		if(null != provider.fullfiller)
 			throw "provider implementation already provided";
-		provider.fullfiller = function() handler(provider.deferred);
-		if(provider.demanded)
-			provider.fullfiller();
+		provider.fullfiller = impl;
+		var demand;
+		while(null != (demand = provider.demands.shift()))
+		{
+			provider.fullfiller().then(demand.resolve);
+		}
 	}
 
 	function getProvider(type : String)
 	{
 		var provider = providers.get(type);
 		if (null == provider)
-			providers.set(type, provider = { deferred : new Deferred<Dynamic>(), fullfiller : null, demanded : false });
+			providers.set(type, provider = { demands : [], fullfiller : null });
 		return provider;
 	}
 }
