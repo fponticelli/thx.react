@@ -31,6 +31,8 @@ class ValueDispatcher
 	public static function getTypeFromClassExpression(cls : ExprOf<Class<Dynamic>>)
 	{
 		return switch(cls.expr) {
+			case EField(p, name):
+				return [haxe.macro.ExprTools.toString(p)].concat([name]).join(".");
 			case EConst(CIdent(s)):
 				return s;
 			case x:
